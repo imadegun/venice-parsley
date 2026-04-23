@@ -1,0 +1,121 @@
+font text LOGO = Garamond
+
+Menu :
+- About
+- Apartments
+- Neigbourhood
+- How to get here
+- Contact with map
+
+
+todo
+- menu show hide ✓
+- content ✓ (Menu Page Content Management implemented)
+- color manage in header ✓
+- UI/UX improvements ✓ (Container spacing: xxl=py-36 for ideal header clearance, header animation 0.7s cubic-bezier, title animations 1s with premium easing)
+- Header gap perfected ✓ (xxl spacing now 9rem/144px to match apartments page ideal spacing)
+- Animation smoothness ✓ (cubic-bezier curves, will-change, translateY 30px, staggered delays 0.15s/0.3s)
+- Typography standardized ✓ (H1: text-4xl/5xl bold gray-900, body: text-lg gray-600 font-mulish leading-8 max-w-4xl)
+- All content pages consistent ✓ (About, Contact, Neighbourhood, How to Get Here)
+
+
+hapus :
+- transportation
+- driver
+- booking
+
+
+booking
+- tombol booking link
+- akan link ke strip lain
+- setiap aprtment punya stripe sendiri
+
+
+Home text
+
+Headline
+Life in the Heart of Venice.
+
+Subheadline
+Intimate stays where timeless Venetian character meets understated contemporary living elegance. Central. Private. Effortless.
+
+Apartments
+Designed for discerning travelers, each residence offers a calm and curated atmosphere, just steps from the city�s most iconic landmarks.
+Thoughtful details, refined materials, and a sense of quiet exclusivity.
+
+
+---
+DATABASE MIGRATIONS REQUIRED
+============================
+⚠️ CRITICAL: Must apply before testing content features
+Two columns needed for page content management:
+
+1. Content column (for all editable pages):
+   ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS content TEXT;
+
+2. Map embed column (for Contact page map):
+   ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS map_embed TEXT;
+
+Migration files:
+- villa-spa/migrations/001_add_content_to_menu_items.sql
+- villa-spa/migrations/002_add_map_embed_to_menu_items.sql
+
+After running migrations:
+1. Restart dev server: rm -rf .next && npm run dev
+2. Visit /admin/content/pages to edit page content
+3. For Contact page: add Google Maps embed code in "Location Map" field
+4. Content appears on frontend pages (About, Contact, Neighbourhood, How to Get Here)
+
+Note: /apartments page is excluded from editing (it's a dynamic listing)
+
+---
+
+
+FEATURES COMPLETED
+==================
+✅ Menu Management CRUD (auto-slug, ordering, active toggle)
+✅ Page Content Editor (rich text/HTML for About, Contact, Neighbourhood, How to Get Here)
+✅ Map Embed Support (Google Maps iframe on Contact page)
+✅ Dynamic Frontend Pages (fetch content from menu_items)
+✅ Container Spacing System (configurable py-* classes)
+✅ Header Entrance Animation (slide-down + fade-in)
+✅ Title Text Animations (fade-in-up with staggered delays)
+✅ All admin pages updated with animations
+✅ All frontend pages updated with animations
+
+Files modified: See IMPLEMENTATION_SUMMARY.md for complete inventory
+
+---
+
+
+=======pertanyaan ke marcello==========
+
+Hi Marcello, sorry to bother you. Could you please prepare:
+1. Contents for the detail page, as I checked the website and it's no longer there:
+- About
+- Neighborhood
+- How to get here
+- Contact & Google map link for "Venice parsley"
+2. Regarding the booking system, I have a question:
+- Will the booking system on the website be provided by another party? If so, I need a <script code> link from the provider.
+3. Regarding the online payment provider using STRIPE, is it also provided by another party? If so, I need a <script code> link to connect to the website.
+
+4. If the booking system and online payment for STRIPE are developed in-house, please confirm.
+5. Regarding the apartments:
+- Does each apartment have its own photo? I downloaded the apartment photos from the website, but I'm confused as I can't see the difference between apartments 1, 2, and 3. If so, please provide individual photos (in good resolution).
+
+
+======================
+
+I've updated the todo list with steps. Neon's free tier includes automated backups. Start by creating a Neon account at neon.tech.
+
+For migration (replace placeholders with your actual values from Supabase and Neon dashboards):
+
+Export from Supabase:
+pg_dump -h [SUPABASE_HOST] -U [SUPABASE_USER] -d [SUPABASE_DB] --no-owner --no-privileges -f supabase_dump.sql
+Import to Neon:
+pg_restore -h [NEON_HOST] -U [NEON_USER] -d [NEON_DB] -v supabase_dump.sql
+Replace connection details (host, user, db) from your providers' settings. Update your app's connection string to Neon's, then test.
+
+
++0

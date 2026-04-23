@@ -1,0 +1,32 @@
+{
+  "worktrees": {
+    "wt-1776915737484-1": {
+      "branch": "beneficial-meteorite",
+      "path": "e:\\Programing\\Bmad-Speckit\\venice-parcley\\.kilo\\worktrees\\beneficial-meteorite",
+      "parentBranch": "office2",
+      "createdAt": "2026-04-23T03:42:17.484Z",
+      "remote": "origin"
+    },
+    "wt-1776916434249-2": {
+      "branch": "gusty-curiosity",
+      "path": "e:\\Programing\\Bmad-Speckit\\venice-parcley\\.kilo\\worktrees\\gusty-curiosity",
+      "parentBranch": "office2",
+      "createdAt": "2026-04-23T03:53:54.249Z",
+      "remote": "origin"
+    }
+  },
+  "sessions": {
+    "ses_2479191b7ffeWWn4C97KeLF4QG": {
+      "worktreeId": "wt-1776915737484-1",
+      "createdAt": "2026-04-23T03:42:21.331Z"
+    },
+    "ses_24786ea12ffe73xVVItV56imbr": {
+      "worktreeId": "wt-1776916434249-2",
+      "createdAt": "2026-04-23T03:53:56.611Z"
+    }
+  },
+  "worktreeOrder": [
+    "wt-1776915737484-1",
+    "wt-1776916434249-2"
+  ]
+}
