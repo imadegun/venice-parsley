@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Josefin_Sans, Montserrat, Bebas_Neue, Mulish, Yellowtail } from "next/font/google";
 import "./globals.css";
 import { RouteShell } from "@/components/layout/route-shell";
+import { LanguageProvider } from "@/components/language-provider";
+import { LanguageCookieSync } from "@/components/language-cookie-sync";
 
 // Custom Typography Fonts
 const josefinSans = Josefin_Sans({
@@ -52,7 +54,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${josefinSans.variable} ${montserrat.variable} ${bebasNeue.variable} ${mulish.variable} ${yellowtail.variable}`}>
       <body className={`${mulish.className} antialiased min-h-screen flex flex-col font-body`}>
-        <RouteShell>{children}</RouteShell>
+        <LanguageProvider>
+          <LanguageCookieSync />
+          <RouteShell>{children}</RouteShell>
+        </LanguageProvider>
       </body>
     </html>
   );

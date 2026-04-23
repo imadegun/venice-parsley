@@ -10,6 +10,7 @@ import { ArrowRight, MapPin, Star, Users } from "lucide-react"
 import { getHomepageContent } from "@/lib/content"
 import { createServerSupabaseClient } from "@/lib/supabase"
 import { ScrollReveal } from "@/components/animations/scroll-reveal"
+import { getServerLanguage } from "@/lib/server-i18n"
 import type { HeroContent } from "@/lib/content"
 
 interface FrontendApartment {
@@ -26,14 +27,14 @@ interface FrontendApartment {
 }
 
 export default async function Home() {
+  const lang = await getServerLanguage()
   const homepageContent = await getHomepageContent()
   console.log('🔍 Home page: homepageContent:', JSON.stringify(homepageContent, null, 2))
   console.log('🔍 Home page: intro section:', JSON.stringify(homepageContent.intro, null, 2))
 
   const supabase = createServerSupabaseClient()
 
-  // Get current language (simplified - you may want to implement proper i18n detection)
-  const currentLang = 'en' as 'en' | 'it' // TODO: Implement proper language detection
+  const currentLang = lang
   const { data: featuredApartments } = await supabase
     .from('apartments')
     .select('id, slug, name, short_description, base_price_cents, max_guests, bedrooms, gallery_images, image_url, is_active')

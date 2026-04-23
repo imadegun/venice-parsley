@@ -165,48 +165,36 @@ export interface Database {
           contact_info?: Json
         }
       }
-      user_profiles: {
+      profiles: {
         Row: {
           id: string
+          email: string
+          full_name: string | null
+          phone: string | null
+          role: 'guest' | 'member' | 'admin' | null
+          notification_preferences: Json | null
           created_at: string
           updated_at: string
-          user_id: string
-          full_name: string
-          phone?: string
-          date_of_birth?: string
-          nationality?: string
-          passport_number?: string
-          emergency_contact?: Json
-          preferences: Json
-          role: 'user' | 'admin' | 'administrator'
         }
         Insert: {
-          id?: string
+          id: string
+          email: string
+          full_name?: string | null
+          phone?: string | null
+          role?: 'guest' | 'member' | 'admin' | null
+          notification_preferences?: Json | null
           created_at?: string
           updated_at?: string
-          user_id: string
-          full_name: string
-          phone?: string
-          date_of_birth?: string
-          nationality?: string
-          passport_number?: string
-          emergency_contact?: Json
-          preferences?: Json
-          role?: 'user' | 'admin' | 'administrator'
         }
         Update: {
           id?: string
+          email?: string
+          full_name?: string | null
+          phone?: string | null
+          role?: 'guest' | 'member' | 'admin' | null
+          notification_preferences?: Json | null
           created_at?: string
           updated_at?: string
-          user_id?: string
-          full_name?: string
-          phone?: string
-          date_of_birth?: string
-          nationality?: string
-          passport_number?: string
-          emergency_contact?: Json
-          preferences?: Json
-          role?: 'user' | 'admin' | 'administrator'
         }
       }
       content_sections: {

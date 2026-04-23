@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Edit } from 'lucide-react'
 
 interface MenuItem {
@@ -13,7 +15,7 @@ interface MenuItem {
   href: string
   is_active: boolean
   sort_order: number
-  content?: string | null
+  content?: {en?: string, it?: string} | string | null
   map_embed?: string | null
   image_url?: string | null
 }
@@ -24,12 +26,10 @@ export default function MenuPagesManagement() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
 
-  // Content states
-  const [content, setContent] = useState('')
+  // Bilingual content states
+  const [contentEn, setContentEn] = useState('')
+  const [contentIt, setContentIt] = useState('')
   const [mapEmbed, setMapEmbed] = useState('')
-
-  // Image state
-  // const [pageImage, setPageImage] = useState({ images: [] as string[], mainImageIndex: 0 })
 
   useEffect(() => {
     fetchMenuItems()
@@ -42,7 +42,7 @@ export default function MenuPagesManagement() {
         const data = await response.json()
         // Filter out system pages that should not be edited here
         const nonEditablePaths = ['/apartments', '/login', '/register', '/admin']
-        const editableItems = data.filter((item) =>
+        const editableItems = data.filter((item: MenuItem) =>
           item.is_active && !nonEditablePaths.includes(item.href)
         )
         setMenuItems(editableItems)
@@ -56,18 +56,41 @@ export default function MenuPagesManagement() {
 
   const openEditContent = (item: MenuItem) => {
     setSelectedItem(item)
-    setContent(item.content || '')
+    
+    // Parse content - could be JSON string with {en, it} or plain string
+    let enContent = ''
+    let itContent = ''
+    
+    if (item.content) {
+      if (typeof item.content === 'string') {
+        try {
+          const parsed = JSON.parse(item.content)
+          enContent = parsed.en || ''
+          itContent = parsed.it || ''
+        } catch {
+          enContent = item.content
+        }
+      } else if (typeof item.content === 'object') {
+        enContent = item.content.en || ''
+        itContent = item.content.it || ''
+      }
+    }
+    
+    setContentEn(enContent)
+    setContentIt(itContent)
     setMapEmbed(item.map_embed || '')
-    // setPageImage({
-    //   images: item.image_url ? [item.image_url] : [],
-    //   mainImageIndex: 0
-    // })
     setDialogOpen(true)
   }
 
   const saveContent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedItem) return
+
+    // Store content as JSON with en/it keys
+    const contentValue = JSON.stringify({
+      en: contentEn,
+      it: contentIt
+    })
 
     try {
       const response = await fetch(`/api/admin/menu/${selectedItem.id}`, {
@@ -78,9 +101,8 @@ export default function MenuPagesManagement() {
           href: selectedItem.href,
           is_active: selectedItem.is_active,
           sort_order: selectedItem.sort_order,
-          content: content,
+          content: contentValue,
           map_embed: mapEmbed,
-          // image_url: pageImage.images[0] || null
         })
       })
 
@@ -88,9 +110,9 @@ export default function MenuPagesManagement() {
         await fetchMenuItems()
         setDialogOpen(false)
         setSelectedItem(null)
-        setContent('')
+        setContentEn('')
+        setContentIt('')
         setMapEmbed('')
-        // setPageImage({ images: [], mainImageIndex: 0 })
       }
     } catch (error) {
       console.error('Error saving page content:', error)
@@ -106,7 +128,7 @@ export default function MenuPagesManagement() {
       <div className="animate-title">
         <h1 className="text-3xl font-bold text-gray-900">Menu Page Content</h1>
         <p className="text-gray-600 mt-2">
-          Manage page content for each navigation menu item. Edit rich text for pages like About, Contact, etc.
+          Manage page content for each navigation menu item. Enter content in both English and Italian.
         </p>
       </div>
 
@@ -159,22 +181,41 @@ export default function MenuPagesManagement() {
             </DialogTitle>
           </DialogHeader>
             <form onSubmit={saveContent} className="space-y-6">
-              <div>
-                <label htmlFor="content">Page Content (HTML)</label>
-                <Textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Enter page content..."
-                    className="min-h-80 mt-2"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Supports HTML formatting. Leave empty if no content needed.
-                </p>
-              </div>
+              <Tabs defaultValue="en">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="en" className="space-y-4">
+                  <div>
+                    <Label htmlFor="contentEn">Page Content (English)</Label>
+                    <Textarea
+                      id="contentEn"
+                      value={contentEn}
+                      onChange={(e) => setContentEn(e.target.value)}
+                      placeholder="Enter English page content..."
+                      className="min-h-60 mt-2"
+                    />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="it" className="space-y-4">
+                  <div>
+                    <Label htmlFor="contentIt">Page Content (Italian)</Label>
+                    <Textarea
+                      id="contentIt"
+                      value={contentIt}
+                      onChange={(e) => setContentIt(e.target.value)}
+                      placeholder="Inserisci il contenuto della pagina in italiano..."
+                      className="min-h-60 mt-2"
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div>
-                <label htmlFor="map_embed">Location Map (Optional)</label>
+                <Label htmlFor="map_embed">Location Map (Optional)</Label>
                 <Textarea
                   id="map_embed"
                   value={mapEmbed}
@@ -186,8 +227,6 @@ export default function MenuPagesManagement() {
                   Paste a Google Maps embed iframe. The map will display above the page content (useful for Contact page).
                 </p>
               </div>
-
-
 
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>

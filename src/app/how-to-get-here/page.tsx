@@ -1,8 +1,11 @@
 import { Container } from '@/components/layout/container'
 import { createServerAuthClient } from '@/lib/supabase-server'
+import { getServerLanguage } from '@/lib/server-i18n'
+import { getLocalizedContent, getLocalizedTitle } from '@/lib/i18n-content'
 
 export default async function HowToGetHerePage() {
   const supabase = await createServerAuthClient()
+  const lang = await getServerLanguage()
 
   // Fetch the menu item for /how-to-get-here
   const { data: menuItem } = await supabase
@@ -12,8 +15,8 @@ export default async function HowToGetHerePage() {
     .eq('is_active', true)
     .single()
 
-  const content = menuItem?.content?.en
-  const title = menuItem?.title?.en || 'How to Get Here'
+  const content = getLocalizedContent(menuItem?.content, lang)
+  const title = getLocalizedTitle(menuItem?.title, lang) || 'How to Get Here'
 
   return (
     <Container spacing="xxl">

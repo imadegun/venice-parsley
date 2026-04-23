@@ -1,13 +1,12 @@
 import { requireRole } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { UserRoleSelect } from '@/components/admin/user-role-select'
 import { Users, Shield, Crown, User } from 'lucide-react'
 import type { Database } from '@/types/database'
 
-
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
 
 export default async function UsersManagement() {
   // Admins and administrators can access this page
@@ -17,7 +16,7 @@ export default async function UsersManagement() {
 
   // Fetch all users with their profiles
   const { data: users, error } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
 
@@ -25,40 +24,25 @@ export default async function UsersManagement() {
     console.error('Error fetching users:', error)
   }
 
-  const userList = users || []
+  const userList = (users as ProfileRow[]) || []
 
-  const updateUserRole = async (userId: string, newRole: string) => {
-    'use server'
-
-    const supabase = createServerSupabaseClient()
-
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ role: newRole as 'user' | 'admin' | 'administrator' })
-      .eq('user_id', userId)
-
-    if (error) {
-      console.error('Error updating user role:', error)
-    }
-  }
-
-  const getRoleIcon = (role: string) => {
+  const getRoleIcon = (role: string | null) => {
     switch (role) {
-      case 'administrator':
-        return <Crown className="h-4 w-4 text-purple-600" />
       case 'admin':
         return <Shield className="h-4 w-4 text-blue-600" />
+      case 'member':
+        return <Crown className="h-4 w-4 text-purple-600" />
       default:
         return <User className="h-4 w-4 text-gray-600" />
     }
   }
 
-  const getRoleBadgeVariant = (role: string) => {
+  const getRoleBadgeVariant = (role: string | null) => {
     switch (role) {
-      case 'administrator':
-        return 'default'
       case 'admin':
         return 'secondary'
+      case 'member':
+        return 'default'
       default:
         return 'outline'
     }
@@ -98,9 +82,9 @@ export default async function UsersManagement() {
             <div className="flex items-center">
               <Crown className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Administrators</p>
+                <p className="text-sm font-medium text-gray-600">Members</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userList.filter(u => u.role === 'administrator').length}
+                  {userList.filter(u => u.role === 'member').length}
                 </p>
               </div>
             </div>
@@ -126,9 +110,9 @@ export default async function UsersManagement() {
             <div className="flex items-center">
               <User className="h-8 w-8 text-gray-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Regular Users</p>
+                <p className="text-sm font-medium text-gray-600">Guests</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userList.filter(u => u.role === 'user').length}
+                  {userList.filter(u => u.role === 'guest' || !u.role).length}
                 </p>
               </div>
             </div>
@@ -153,14 +137,14 @@ export default async function UsersManagement() {
           ) : (
             <div className="space-y-4">
               {userList.map((user) => (
-                <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center">
                       <User className="h-6 w-6 text-gray-400" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">{user.full_name}</h3>
-                      <p className="text-sm text-gray-600">ID: {user.user_id.slice(0, 8)}...</p>
+                      <h3 className="font-medium text-gray-900">{user.full_name || 'No name'}</h3>
+                      <p className="text-sm text-gray-600">{user.email}</p>
                       <p className="text-xs text-gray-500">
                         Joined {new Date(user.created_at).toLocaleDateString()}
                       </p>
@@ -170,22 +154,13 @@ export default async function UsersManagement() {
                   <div className="flex items-center gap-3">
                     <Badge variant={getRoleBadgeVariant(user.role)} className="flex items-center gap-1">
                       {getRoleIcon(user.role)}
-                      {user.role}
+                      {user.role || 'guest'}
                     </Badge>
 
-                    <Select
-                      defaultValue={user.role}
-                      onValueChange={(value) => updateUserRole(user.user_id, value)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="administrator">Administrator</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <UserRoleSelect
+                      userId={user.id!}
+                      defaultRole={user.role || 'guest'}
+                    />
                   </div>
                 </div>
               ))}

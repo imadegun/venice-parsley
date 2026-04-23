@@ -1,8 +1,11 @@
 import { createServerAuthClient } from '@/lib/supabase-server'
 import { Container } from '@/components/layout/container'
+import { getServerLanguage } from '@/lib/server-i18n'
+import { getLocalizedContent, getLocalizedTitle } from '@/lib/i18n-content'
 
 export default async function ContactPage() {
   const supabase = await createServerAuthClient()
+  const lang = await getServerLanguage()
 
   // Fetch the menu item for /contact
   const { data: menuItem } = await supabase
@@ -12,9 +15,9 @@ export default async function ContactPage() {
     .eq('is_active', true)
     .single()
 
-  const content = menuItem?.content?.en
+  const content = getLocalizedContent(menuItem?.content, lang)
   const mapEmbed = menuItem?.map_embed
-  const title = menuItem?.title?.en || 'Contact Us'
+  const title = getLocalizedTitle(menuItem?.title, lang) || 'Contact Us'
 
   return (
     <Container spacing="xxl">

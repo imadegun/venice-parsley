@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Menu, X } from 'lucide-react'
+import { useLanguage } from '@/components/language-provider'
+import { LanguageSwitcher } from '@/components/ui/lang-switcher'
 
 interface MenuItem {
   id: string
@@ -25,6 +27,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [themeSettings, setThemeSettings] = useState<ThemeSettings | null>(null)
+  const { language } = useLanguage()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -205,10 +208,14 @@ export function Header() {
                     onClick={closeMenu}
                     className="block px-6 py-2 text-lg font-medium text-white hover:text-yellow-300 hover:translate-x-2 transition-all duration-200"
                   >
-                    › {item.title?.en}
+                    › {item.title?.[language] || item.title?.en || 'Untitled'}
                   </Link>
                 </li>
               ))}
+              {/* Language Switcher in mobile menu */}
+              <li className="px-6 pt-4 border-t border-white/20">
+                <LanguageSwitcher />
+              </li>
             </ul>
           </nav>
         </div>
@@ -241,10 +248,14 @@ export function Header() {
                     onClick={closeMenu}
                     className="block px-8 py-3 text-xl font-medium text-white hover:text-yellow-300 hover:translate-x-4 transition-all duration-200"
                   >
-                    › {item.title?.en}
+                    › {item.title?.[language] || item.title?.en || 'Untitled'}
                   </Link>
                 </li>
               ))}
+              {/* Language Switcher in desktop menu */}
+              <li className="px-8 pt-6 border-t border-white/20">
+                <LanguageSwitcher />
+              </li>
             </ul>
           </nav>
         </div>
