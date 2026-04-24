@@ -8,11 +8,11 @@ export function Footer() {
          
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Apartments</h3>
+            <h3 className="font-semibold mb-4">Information</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/apartments" className="hover:text-white">All Apartments</Link></li>
-              <li><Link href="/apartments?type=artistic-studio" className="hover:text-white">Artistic Studios</Link></li>
-              <li><Link href="/apartments?type=design-loft" className="hover:text-white">Design Lofts</Link></li>              
+              <li><Link href="/apartments" className="hover:text-white">CIR : 027042-LOC-15600</Link></li>
+              <li><Link href="/apartments?type=artistic-studio" className="hover:text-white">CIN : IT027042C2ADIO77EW</Link></li>
+                            
             </ul>
           </div>
          

@@ -43,8 +43,8 @@ const yellowtail = Yellowtail({
 });
 
 export const metadata: Metadata = {
-  title: "Venice Parcley - Luxury Artistic Apartments",
-  description: "Discover unique artistic apartments in Venice. Luxury accommodations designed for art lovers, creative souls, and discerning travelers.",
+  title: "Venice Parsley - Luxury Artistic Apartments",
+  description: "Discover unique artistic apartments in Venice. creative souls, and discerning travelers.",
 };
 
 export default function RootLayout({

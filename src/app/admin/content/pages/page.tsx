@@ -174,74 +174,82 @@ export default function MenuPagesManagement() {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Edit Page Content: {selectedItem?.title?.en || 'Page'}
-            </DialogTitle>
-          </DialogHeader>
-            <form onSubmit={saveContent} className="space-y-6">
-              <Tabs defaultValue="en">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-                  <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="en" className="space-y-4">
-                  <div>
-                    <Label htmlFor="contentEn">Page Content (English)</Label>
-                    <div className="mt-2">
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-0" style={{ width: '80vw', maxWidth: '1400px', minWidth: '800px' }}>
+            <DialogHeader className="px-8 pt-8 pb-6 border-b">
+              <DialogTitle className="text-2xl font-bold">
+                Edit Page Content: {selectedItem?.title?.en || 'Page'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="px-8 pb-8 flex flex-col">
+              <form onSubmit={saveContent} className="space-y-6 flex flex-col">
+                 <Tabs defaultValue="en" className="w-full flex flex-col">
+                  <TabsList className="w-full mb-8 h-12 bg-muted/50">
+                    <TabsTrigger value="en" className="flex-1 text-base h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                      English
+                    </TabsTrigger>
+                    <TabsTrigger value="it" className="flex-1 text-base h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                      Italian
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                    <TabsContent value="en" className="mt-0 flex-1">
                       <MarkdownEditor
                         value={contentEn}
                         onChange={setContentEn}
                         placeholder="Enter English page content..."
-                        rows={12}
+                        rows={20}
                       />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="it" className="space-y-4">
-                  <div>
-                    <Label htmlFor="contentIt">Page Content (Italian)</Label>
-                    <div className="mt-2">
+                    </TabsContent>
+
+                    <TabsContent value="it" className="mt-0 flex-1">
                       <MarkdownEditor
                         value={contentIt}
                         onChange={setContentIt}
                         placeholder="Inserisci il contenuto della pagina in italiano..."
-                        rows={12}
+                        rows={20}
                       />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                    </TabsContent>
+                </Tabs>
 
-              <div>
-                <Label htmlFor="map_embed">Location Map (Optional)</Label>
-                <Textarea
-                  id="map_embed"
-                  value={mapEmbed}
-                  onChange={(e) => setMapEmbed(e.target.value)}
-                  placeholder="Paste Google Maps embed iframe code..."
-                  className="min-h-[100px] mt-2 font-mono text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Paste a Google Maps embed iframe. The map will display above the page content (useful for Contact page).
-                </p>
-              </div>
+                <div className="pt-6 border-t space-y-3">
+                  <Label htmlFor="map_embed" className="text-base font-semibold">
+                    Location Map (Optional)
+                  </Label>
+                  {selectedItem?.href === '/about' && (
+                    <p className="text-sm text-orange-600">Not available for About page</p>
+                  )}
+                  <Textarea
+                    id="map_embed"
+                    value={mapEmbed}
+                    onChange={(e) => setMapEmbed(e.target.value)}
+                    placeholder={selectedItem?.href === '/about'
+                      ? "Map feature is not available for the About page"
+                      : "Paste Google Maps embed iframe code..."
+                    }
+                    className="min-h-[80px] font-mono text-sm w-full"
+                    disabled={selectedItem?.href === '/about'}
+                    readOnly={selectedItem?.href === '/about'}
+                  />
+                  {selectedItem?.href !== '/about' && (
+                    <p className="text-sm text-muted-foreground">
+                      Paste a Google Maps embed iframe for location display.
+                    </p>
+                  )}
+                </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                Save Content
-              </Button>
+                <div className="flex justify-end space-x-3 pt-6 border-t">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    Save Content
+                  </Button>
+                </div>
+              </form>
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+         </DialogContent>
+       </Dialog>
     </div>
   )
 }

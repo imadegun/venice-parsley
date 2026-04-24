@@ -13,6 +13,13 @@
       "parentBranch": "office2",
       "createdAt": "2026-04-23T03:53:54.249Z",
       "remote": "origin"
+    },
+    "wt-1777014063778-1": {
+      "branch": "difficult-waltz",
+      "path": "e:\\Programing\\venice-parsley\\.kilo\\worktrees\\difficult-waltz",
+      "parentBranch": "master",
+      "createdAt": "2026-04-24T07:01:03.778Z",
+      "remote": "origin"
     }
   },
   "sessions": {
@@ -23,10 +30,15 @@
     "ses_24786ea12ffe73xVVItV56imbr": {
       "worktreeId": "wt-1776916434249-2",
       "createdAt": "2026-04-23T03:53:56.611Z"
+    },
+    "ses_241b53ac9ffeKbwFH59MAOAbo6": {
+      "worktreeId": "wt-1777014063778-1",
+      "createdAt": "2026-04-24T07:01:09.531Z"
     }
   },
   "worktreeOrder": [
     "wt-1776915737484-1",
-    "wt-1776916434249-2"
+    "wt-1776916434249-2",
+    "wt-1777014063778-1"
   ]
 }

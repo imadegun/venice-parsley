@@ -94,7 +94,7 @@ export function MarkdownEditor({
   ]
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-hidden w-full">
       <div className="flex gap-1 p-2 border-b bg-muted/30">
           {actions.map((Action, idx) => (
                 <Button
