@@ -58,12 +58,29 @@ export function DynamicForm({
       .replace(/-+/g, '-')
 
   useEffect(() => {
-    if (isOpen && initialValues) {
-      setValues({...initialValues})
-    } else if (isOpen) {
-      setValues({})
+    if (isOpen) {
+      if (initialValues && Object.keys(initialValues).length > 0) {
+        const processedValues: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(initialValues)) {
+          const field = fields.find(f => f.name === key)
+          if (field && (field.type === 'multilang-text' || field.type === 'multilang-textarea' || field.type === 'multilang-markdown')) {
+            if (typeof value === 'string') {
+              processedValues[key] = { en: value, it: '' }
+            } else if (value && typeof value === 'object' && 'en' in value) {
+              processedValues[key] = value
+            } else {
+              processedValues[key] = { en: '', it: '' }
+            }
+          } else {
+            processedValues[key] = value
+          }
+        }
+        setValues(processedValues)
+      } else {
+        setValues({})
+      }
     }
-  }, [initialValues, isOpen])
+  }, [initialValues, isOpen, fields])
 
   const handleChange = (name: string, value: unknown) => {
     setValues(prev => {
@@ -126,84 +143,78 @@ export function DynamicForm({
       case 'multilang-text':
         const multilangTextValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
         return (
-          <Tabs defaultValue="en" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
-            </TabsList>
-            <TabsContent value="en" className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">English</Label>
               <Input
                 placeholder={`${field.placeholder || field.label} (English)`}
                 value={multilangTextValue.en || ''}
                 onChange={(e) => handleChange(field.name, { ...multilangTextValue, en: e.target.value })}
                 disabled={field.disabled}
               />
-            </TabsContent>
-            <TabsContent value="it" className="space-y-2">
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">Italian</Label>
               <Input
                 placeholder={`${field.placeholder || field.label} (Italian)`}
                 value={multilangTextValue.it || ''}
                 onChange={(e) => handleChange(field.name, { ...multilangTextValue, it: e.target.value })}
                 disabled={field.disabled}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         )
 
       case 'multilang-textarea':
         const multilangTextareaValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
         return (
-          <Tabs defaultValue="en" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
-            </TabsList>
-            <TabsContent value="en" className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">English</Label>
               <Textarea
                 placeholder={`${field.placeholder || field.label} (English)`}
                 value={multilangTextareaValue.en || ''}
                 onChange={(e) => handleChange(field.name, { ...multilangTextareaValue, en: e.target.value })}
-                rows={5}
+                rows={3}
                 disabled={field.disabled}
               />
-            </TabsContent>
-            <TabsContent value="it" className="space-y-2">
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">Italian</Label>
               <Textarea
                 placeholder={`${field.placeholder || field.label} (Italian)`}
                 value={multilangTextareaValue.it || ''}
                 onChange={(e) => handleChange(field.name, { ...multilangTextareaValue, it: e.target.value })}
-                rows={5}
+                rows={3}
                 disabled={field.disabled}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         )
 
       case 'multilang-markdown':
         const multilangMarkdownValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
         return (
-          <Tabs defaultValue="en" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
-              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
-            </TabsList>
-            <TabsContent value="en" className="space-y-2">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">English</Label>
               <MarkdownEditor
                 value={multilangMarkdownValue.en || ''}
                 onChange={(val) => handleChange(field.name, { ...multilangMarkdownValue, en: val })}
                 placeholder={`${field.placeholder || field.label} (English)`}
-                rows={8}
+                rows={6}
               />
-            </TabsContent>
-            <TabsContent value="it" className="space-y-2">
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1">Italian</Label>
               <MarkdownEditor
                 value={multilangMarkdownValue.it || ''}
                 onChange={(val) => handleChange(field.name, { ...multilangMarkdownValue, it: val })}
                 placeholder={`${field.placeholder || field.label} (Italian)`}
-                rows={8}
+                rows={6}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         )
 
       case 'checkbox':
@@ -261,114 +272,34 @@ export function DynamicForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[80vw] !max-w-[80vw] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 max-w-5xl">
+        <DialogHeader className="px-8 pt-8 pb-6 border-b">
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Header */}
-          <div className="pb-6 border-b">
-            <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
-            <p className="text-sm text-gray-600 mt-2">Fill out the information below to {editItem ? 'update' : 'create'} this item.</p>
-          </div>
-
-          {/* Form Content */}
-          <div className="space-y-8">
-            {/* Basic Information */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-8 bg-blue-500 rounded-full"></div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-                  <p className="text-sm text-gray-600">Core details about the apartment</p>
+        <div className="px-8 pb-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="max-w-3xl mx-auto w-full space-y-6">
+              {fields.map((field) => (
+                <div key={field.name} className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </Label>
+                  {renderField(field)}
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fields.slice(0, 4).map((field) => (
-                  <div key={field.name} className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-                    {renderField(field)}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6">
-                {fields.slice(4, 5).map((field) => (
-                  <div key={field.name} className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-                    {renderField(field)}
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
 
-            {/* Details & Amenities */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-8 bg-green-500 rounded-full"></div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Details & Amenities</h3>
-                  <p className="text-sm text-gray-600">Additional features and specifications</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fields.slice(5, 11).map((field) => (
-                  <div key={field.name} className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-                    {renderField(field)}
-                  </div>
-                ))}
-              </div>
+            <div className="flex justify-end gap-3 pt-6 border-t">
+              <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : submitText}
+              </Button>
             </div>
-
-            {/* Images Section */}
-            {fields.slice(11).length > 0 && (
-              <div className="bg-gray-50 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-8 bg-purple-500 rounded-full"></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Images & Media</h3>
-                    <p className="text-sm text-gray-600">Upload images and visual content</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {fields.slice(11).map((field) => (
-                    <div key={field.name} className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700">
-                        {field.label}
-                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                      </Label>
-                      {renderField(field)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t bg-white">
-            <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : submitText}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

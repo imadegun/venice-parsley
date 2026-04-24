@@ -20,6 +20,20 @@
       "parentBranch": "master",
       "createdAt": "2026-04-24T07:01:03.778Z",
       "remote": "origin"
+    },
+    "wt-1777019429957-2": {
+      "branch": "adaptive-roquefort",
+      "path": "e:\\Programing\\venice-parsley\\.kilo\\worktrees\\adaptive-roquefort",
+      "parentBranch": "master",
+      "createdAt": "2026-04-24T08:30:29.957Z",
+      "remote": "origin"
+    },
+    "wt-1777019610427-3": {
+      "branch": "fantasy-gondola",
+      "path": "e:\\Programing\\venice-parsley\\.kilo\\worktrees\\fantasy-gondola",
+      "parentBranch": "master",
+      "createdAt": "2026-04-24T08:33:30.427Z",
+      "remote": "origin"
     }
   },
   "sessions": {
@@ -34,11 +48,17 @@
     "ses_241b53ac9ffeKbwFH59MAOAbo6": {
       "worktreeId": "wt-1777014063778-1",
       "createdAt": "2026-04-24T07:01:09.531Z"
+    },
+    "ses_241635935ffeJk3Kd1SdMx7iOK": {
+      "worktreeId": "wt-1777019429957-2",
+      "createdAt": "2026-04-24T08:30:31.370Z"
     }
   },
   "worktreeOrder": [
     "wt-1776915737484-1",
     "wt-1776916434249-2",
-    "wt-1777014063778-1"
+    "wt-1777014063778-1",
+    "wt-1777019429957-2",
+    "wt-1777019610427-3"
   ]
 }

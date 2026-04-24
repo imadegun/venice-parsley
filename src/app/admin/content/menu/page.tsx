@@ -154,80 +154,85 @@ export default function MenuManagement() {
             <Plus className="w-4 h-4 mr-2" />
             Add Menu Item
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem ? 'Edit Menu Item' : 'Add Menu Item'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title_en">Title (English)</Label>
-                <Input
-                  id="title_en"
-                  value={formData.title_en}
-                  onChange={(e) => {
-                    const newTitle = e.target.value
-                    // Auto-generate href only if user hasn't manually edited it
-                    const newHref = hrefTouched ? formData.href : slugify(newTitle)
-                    setFormData({ ...formData, title_en: newTitle, href: newHref })
-                  }}
-                  required
-                />
+           <DialogContent className="max-h-[90vh] overflow-y-auto p-0" style={{ width: '80vw', maxWidth: '1400px', minWidth: '800px' }}>
+             <DialogHeader className="px-8 pt-8 pb-6 border-b">
+               <DialogTitle className="text-2xl font-bold">
+                 {editingItem ? 'Edit Menu Item' : 'Add Menu Item'}
+               </DialogTitle>
+             </DialogHeader>
+              <div className="px-8 pb-8">
+                <div className="max-w-2xl mx-auto w-full">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="title_en">Title (English)</Label>
+                        <Input
+                          id="title_en"
+                          value={formData.title_en}
+                          onChange={(e) => {
+                            const newTitle = e.target.value
+                            const newHref = hrefTouched ? formData.href : slugify(newTitle)
+                            setFormData({ ...formData, title_en: newTitle, href: newHref })
+                          }}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="title_it">Title (Italian)</Label>
+                        <Input
+                          id="title_it"
+                          value={formData.title_it}
+                          onChange={(e) => {
+                            setFormData({ ...formData, title_it: e.target.value })
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="href">URL</Label>
+                        <Input
+                          id="href"
+                          value={formData.href}
+                          onChange={(e) => {
+                            setFormData({ ...formData, href: e.target.value })
+                            setHrefTouched(true)
+                          }}
+                          onFocus={() => setHrefTouched(true)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sort_order">Sort Order</Label>
+                        <Input
+                          id="sort_order"
+                          type="number"
+                          value={formData.sort_order}
+                          onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        checked={formData.is_active}
+                        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="is_active">Active</Label>
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-6 border-t">
+                      <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        {editingItem ? 'Update' : 'Create'}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="title_it">Title (Italian)</Label>
-                <Input
-                  id="title_it"
-                  value={formData.title_it}
-                  onChange={(e) => {
-                    setFormData({ ...formData, title_it: e.target.value })
-                  }}
-                />
-              </div>
-              <div>
-                <Label htmlFor="href">URL</Label>
-                <Input
-                  id="href"
-                  value={formData.href}
-                  onChange={(e) => {
-                    setFormData({ ...formData, href: e.target.value })
-                    setHrefTouched(true) // Mark as manually edited
-                  }}
-                  onFocus={() => setHrefTouched(true)}
-                  required
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <Label htmlFor="is_active">Active</Label>
-              </div>
-              <div>
-                <Label htmlFor="sort_order">Sort Order</Label>
-                <Input
-                  id="sort_order"
-                  type="number"
-                  value={formData.sort_order}
-                  onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })}
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {editingItem ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+           </DialogContent>
+         </Dialog>
       </div>
 
       <Card>

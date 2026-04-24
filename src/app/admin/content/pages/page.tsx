@@ -193,7 +193,7 @@ export default function MenuPagesManagement() {
                     </TabsTrigger>
                   </TabsList>
                   
-                    <TabsContent value="en" className="mt-0 flex-1">
+                    <TabsContent value="en" className="mt-0 flex-1 mx-auto max-w-4xl">
                       <MarkdownEditor
                         value={contentEn}
                         onChange={setContentEn}
@@ -202,7 +202,7 @@ export default function MenuPagesManagement() {
                       />
                     </TabsContent>
 
-                    <TabsContent value="it" className="mt-0 flex-1">
+                    <TabsContent value="it" className="mt-0 flex-1 mx-auto max-w-4xl">
                       <MarkdownEditor
                         value={contentIt}
                         onChange={setContentIt}

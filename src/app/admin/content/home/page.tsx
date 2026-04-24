@@ -200,8 +200,8 @@ export default function HomeContentManagement() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 py-8">
+      <div className="flex items-center justify-between animate-title">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Homepage Content</h1>
           <p className="text-gray-600 mt-2">
@@ -213,108 +213,116 @@ export default function HomeContentManagement() {
         </Button>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        <Tabs defaultValue="hero" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="hero" className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
+      <form onSubmit={handleSave} className="max-w-6xl mx-auto w-full space-y-6">
+        <Tabs defaultValue="hero" className="w-full flex flex-col">
+          <TabsList className="w-full mb-6 h-12 bg-muted/50">
+            <TabsTrigger value="hero" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <ImageIcon className="h-4 w-4 mr-2" />
               Hero
             </TabsTrigger>
-            <TabsTrigger value="intro" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="intro" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <FileText className="h-4 w-4 mr-2" />
               Intro
             </TabsTrigger>
-            <TabsTrigger value="featured" className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
+            <TabsTrigger value="featured" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Home className="h-4 w-4 mr-2" />
               Featured
             </TabsTrigger>
-            <TabsTrigger value="about" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="about" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <FileText className="h-4 w-4 mr-2" />
               About
             </TabsTrigger>
-            <TabsTrigger value="seo" className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
+            <TabsTrigger value="seo" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Globe className="h-4 w-4 mr-2" />
               SEO
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="hero" className="space-y-6">
+           <TabsContent value="hero" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Hero Section</CardTitle>
                 <p className="text-sm text-gray-600">Configure the main hero banner content</p>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">English Content</h4>
-                    <div>
-                      <Label htmlFor="heroTitleEn">Title</Label>
-                      <Input
-                        id="heroTitleEn"
-                        name="heroTitleEn"
-                        value={heroTitleEn}
-                        onChange={e => setHeroTitleEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="heroSubtitleEn">Subtitle</Label>
-                      <Textarea
-                        id="heroSubtitleEn"
-                        name="heroSubtitleEn"
-                        value={heroSubtitleEn}
-                        onChange={e => setHeroSubtitleEn(e.target.value)}
-                        className="mt-1"
-                        rows={3}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="heroCtaEn">Call-to-Action Text</Label>
-                      <Input
-                        id="heroCtaEn"
-                        name="heroCtaEn"
-                        value={heroCtaEn}
-                        onChange={e => setHeroCtaEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">Italian Content</h4>
-                    <div>
-                      <Label htmlFor="heroTitleIt">Title</Label>
-                      <Input
-                        id="heroTitleIt"
-                        name="heroTitleIt"
-                        value={heroTitleIt}
-                        onChange={e => setHeroTitleIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="heroSubtitleIt">Subtitle</Label>
-                      <Textarea
-                        id="heroSubtitleIt"
-                        name="heroSubtitleIt"
-                        value={heroSubtitleIt}
-                        onChange={e => setHeroSubtitleIt(e.target.value)}
-                        className="mt-1"
-                        rows={3}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="heroCtaIt">Call-to-Action Text</Label>
-                      <Input
-                        id="heroCtaIt"
-                        name="heroCtaIt"
-                        value={heroCtaIt}
-                        onChange={e => setHeroCtaIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
+               <CardContent className="space-y-6">
+                 <Tabs defaultValue="en" className="w-full flex flex-col">
+                   <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                     <TabsTrigger value="en" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       English
+                     </TabsTrigger>
+                     <TabsTrigger value="it" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Italian
+                     </TabsTrigger>
+                   </TabsList>
+
+                   <TabsContent value="en" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="heroTitleEn">Title</Label>
+                       <Input
+                         id="heroTitleEn"
+                         name="heroTitleEn"
+                         value={heroTitleEn}
+                         onChange={e => setHeroTitleEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="heroSubtitleEn">Subtitle</Label>
+                       <Textarea
+                         id="heroSubtitleEn"
+                         name="heroSubtitleEn"
+                         value={heroSubtitleEn}
+                         onChange={e => setHeroSubtitleEn(e.target.value)}
+                         className="mt-1"
+                         rows={3}
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="heroCtaEn">Call-to-Action Text</Label>
+                       <Input
+                         id="heroCtaEn"
+                         name="heroCtaEn"
+                         value={heroCtaEn}
+                         onChange={e => setHeroCtaEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                   </TabsContent>
+
+                   <TabsContent value="it" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="heroTitleIt">Title</Label>
+                       <Input
+                         id="heroTitleIt"
+                         name="heroTitleIt"
+                         value={heroTitleIt}
+                         onChange={e => setHeroTitleIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="heroSubtitleIt">Subtitle</Label>
+                       <Textarea
+                         id="heroSubtitleIt"
+                         name="heroSubtitleIt"
+                         value={heroSubtitleIt}
+                         onChange={e => setHeroSubtitleIt(e.target.value)}
+                         className="mt-1"
+                         rows={3}
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="heroCtaIt">Call-to-Action Text</Label>
+                       <Input
+                         id="heroCtaIt"
+                         name="heroCtaIt"
+                         value={heroCtaIt}
+                         onChange={e => setHeroCtaIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                   </TabsContent>
+                 </Tabs>
                 <div>
                   <Label>Hero Background Images</Label>
                   <div className="mt-2">
@@ -329,210 +337,234 @@ export default function HomeContentManagement() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="intro" className="space-y-6">
+           <TabsContent value="intro" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Intro Section</CardTitle>
                 <p className="text-sm text-gray-600">Configure the introductory text displayed below the hero</p>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">English Content</h4>
-                    <div>
-                      <Label htmlFor="introTaglineEn">Tagline (uppercase)</Label>
-                      <Input
-                        id="introTaglineEn"
-                        name="introTaglineEn"
-                        value={introTaglineEn}
-                        onChange={e => setIntroTaglineEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="introTitleEn">Title</Label>
-                      <Input
-                        id="introTitleEn"
-                        name="introTitleEn"
-                        value={introTitleEn}
-                        onChange={e => setIntroTitleEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="introDescriptionEn">Description</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={introDescriptionEn}
-                          onChange={setIntroDescriptionEn}
-                          placeholder="Enter introduction description (English)..."
-                          rows={6}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">Italian Content</h4>
-                    <div>
-                      <Label htmlFor="introTaglineIt">Tagline (uppercase)</Label>
-                      <Input
-                        id="introTaglineIt"
-                        name="introTaglineIt"
-                        value={introTaglineIt}
-                        onChange={e => setIntroTaglineIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="introTitleIt">Title</Label>
-                      <Input
-                        id="introTitleIt"
-                        name="introTitleIt"
-                        value={introTitleIt}
-                        onChange={e => setIntroTitleIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="introDescriptionIt">Description</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={introDescriptionIt}
-                          onChange={setIntroDescriptionIt}
-                          placeholder="Inserisci descrizione introduzione (Italiano)..."
-                          rows={6}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
+               <CardContent className="space-y-6">
+                 <Tabs defaultValue="en" className="w-full flex flex-col">
+                   <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                     <TabsTrigger value="en" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       English
+                     </TabsTrigger>
+                     <TabsTrigger value="it" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Italian
+                     </TabsTrigger>
+                   </TabsList>
+
+                   <TabsContent value="en" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="introTaglineEn">Tagline (uppercase)</Label>
+                       <Input
+                         id="introTaglineEn"
+                         name="introTaglineEn"
+                         value={introTaglineEn}
+                         onChange={e => setIntroTaglineEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="introTitleEn">Title</Label>
+                       <Input
+                         id="introTitleEn"
+                         name="introTitleEn"
+                         value={introTitleEn}
+                         onChange={e => setIntroTitleEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="introDescriptionEn">Description</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={introDescriptionEn}
+                           onChange={setIntroDescriptionEn}
+                           placeholder="Enter introduction description (English)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+
+                   <TabsContent value="it" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="introTaglineIt">Tagline (uppercase)</Label>
+                       <Input
+                         id="introTaglineIt"
+                         name="introTaglineIt"
+                         value={introTaglineIt}
+                         onChange={e => setIntroTaglineIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="introTitleIt">Title</Label>
+                       <Input
+                         id="introTitleIt"
+                         name="introTitleIt"
+                         value={introTitleIt}
+                         onChange={e => setIntroTitleIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="introDescriptionIt">Description</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={introDescriptionIt}
+                           onChange={setIntroDescriptionIt}
+                           placeholder="Inserisci descrizione introduzione (Italiano)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+                 </Tabs>
+               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="featured" className="space-y-6">
+           <TabsContent value="featured" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Featured Apartments Section</CardTitle>
                 <p className="text-sm text-gray-600">Configure the featured apartments display</p>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">English Content</h4>
-                    <div>
-                      <Label htmlFor="featuredTitleEn">Section Title</Label>
-                      <Input
-                        id="featuredTitleEn"
-                        name="featuredTitleEn"
-                        value={featuredTitleEn}
-                        onChange={e => setFeaturedTitleEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="featuredDescriptionEn">Section Description</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={featuredDescriptionEn}
-                          onChange={setFeaturedDescriptionEn}
-                          placeholder="Enter featured section description (English)..."
-                          rows={6}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">Italian Content</h4>
-                    <div>
-                      <Label htmlFor="featuredTitleIt">Section Title</Label>
-                      <Input
-                        id="featuredTitleIt"
-                        name="featuredTitleIt"
-                        value={featuredTitleIt}
-                        onChange={e => setFeaturedTitleIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="featuredDescriptionIt">Section Description</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={featuredDescriptionIt}
-                          onChange={setFeaturedDescriptionIt}
-                          placeholder="Inserisci descrizione sezione featured (Italiano)..."
-                          rows={6}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
+               <CardContent className="space-y-6">
+                 <Tabs defaultValue="en" className="w-full flex flex-col">
+                   <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                     <TabsTrigger value="en" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       English
+                     </TabsTrigger>
+                     <TabsTrigger value="it" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Italian
+                     </TabsTrigger>
+                   </TabsList>
+
+                   <TabsContent value="en" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="featuredTitleEn">Section Title</Label>
+                       <Input
+                         id="featuredTitleEn"
+                         name="featuredTitleEn"
+                         value={featuredTitleEn}
+                         onChange={e => setFeaturedTitleEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="featuredDescriptionEn">Section Description</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={featuredDescriptionEn}
+                           onChange={setFeaturedDescriptionEn}
+                           placeholder="Enter featured section description (English)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+
+                   <TabsContent value="it" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="featuredTitleIt">Section Title</Label>
+                       <Input
+                         id="featuredTitleIt"
+                         name="featuredTitleIt"
+                         value={featuredTitleIt}
+                         onChange={e => setFeaturedTitleIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="featuredDescriptionIt">Section Description</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={featuredDescriptionIt}
+                           onChange={setFeaturedDescriptionIt}
+                           placeholder="Inserisci descrizione sezione featured (Italiano)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+                 </Tabs>
+               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="about" className="space-y-6">
+           <TabsContent value="about" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>About Section</CardTitle>
                 <p className="text-sm text-gray-600">Configure the about section content</p>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">English Content</h4>
-                    <div>
-                      <Label htmlFor="aboutTitleEn">About Title</Label>
-                      <Input
-                        id="aboutTitleEn"
-                        name="aboutTitleEn"
-                        value={aboutTitleEn}
-                        onChange={e => setAboutTitleEn(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="aboutContentEn">About Content</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={aboutContentEn}
-                          onChange={setAboutContentEn}
-                          placeholder="Enter about content (English)..."
-                          rows={8}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">Italian Content</h4>
-                    <div>
-                      <Label htmlFor="aboutTitleIt">About Title</Label>
-                      <Input
-                        id="aboutTitleIt"
-                        name="aboutTitleIt"
-                        value={aboutTitleIt}
-                        onChange={e => setAboutTitleIt(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="aboutContentIt">About Content</Label>
-                      <div className="mt-1">
-                        <MarkdownEditor
-                          value={aboutContentIt}
-                          onChange={setAboutContentIt}
-                          placeholder="Inserisci contenuto about (Italiano)..."
-                          rows={8}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
+               <CardContent className="space-y-6">
+                 <Tabs defaultValue="en" className="w-full flex flex-col">
+                   <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                     <TabsTrigger value="en" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       English
+                     </TabsTrigger>
+                     <TabsTrigger value="it" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                       Italian
+                     </TabsTrigger>
+                   </TabsList>
+
+                   <TabsContent value="en" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="aboutTitleEn">About Title</Label>
+                       <Input
+                         id="aboutTitleEn"
+                         name="aboutTitleEn"
+                         value={aboutTitleEn}
+                         onChange={e => setAboutTitleEn(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="aboutContentEn">About Content</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={aboutContentEn}
+                           onChange={setAboutContentEn}
+                           placeholder="Enter about content (English)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+
+                   <TabsContent value="it" className="space-y-4 min-h-[400px]">
+                     <div>
+                       <Label htmlFor="aboutTitleIt">About Title</Label>
+                       <Input
+                         id="aboutTitleIt"
+                         name="aboutTitleIt"
+                         value={aboutTitleIt}
+                         onChange={e => setAboutTitleIt(e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="aboutContentIt">About Content</Label>
+                       <div className="mt-1">
+                         <MarkdownEditor
+                           value={aboutContentIt}
+                           onChange={setAboutContentIt}
+                           placeholder="Inserisci contenuto about (Italiano)..."
+                           rows={20}
+                         />
+                       </div>
+                     </div>
+                   </TabsContent>
+                 </Tabs>
+               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="seo" className="space-y-6">
+           <TabsContent value="seo" className="space-y-6 min-h-[200px]">
             <Card>
               <CardHeader>
                 <CardTitle>SEO Settings</CardTitle>
