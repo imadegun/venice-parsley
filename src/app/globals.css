@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -367,4 +366,67 @@
   .font-yellowtail {
     font-family: var(--font-yellowtail);
   }
+}
+
+/* Menu Content Styling - Override WYSIWYG styles */
+.menu-content {
+  /* Reset any unwanted margins/padding from WYSIWYG */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.menu-content * {
+  /* Reset box-sizing for consistent sizing */
+  box-sizing: border-box;
+}
+
+.menu-content p {
+  /* Ensure paragraphs don't collapse */
+  min-height: 1.5em;
+}
+
+.menu-content img {
+  /* Ensure images don't overflow */
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.menu-content table {
+  /* Ensure tables are responsive */
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.menu-content table th,
+.menu-content table td {
+  /* Reset table cell styles */
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* Reset any inline styles that might come from WYSIWYG editors */
+.menu-content [style*="font-family"],
+.menu-content [style*="font-size"],
+.menu-content [style*="color"],
+.menu-content [style*="margin"],
+.menu-content [style*="padding"] {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  color: inherit !important;
+  margin: inherit !important;
+  padding: inherit !important;
+}
+
+/* Ensure proper spacing between elements */
+.menu-content > *:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+/* Reset common WYSIWYG editor styles */
+.menu-content .mce-content-body,
+.menu-content .cke_editable,
+.menu-content .editor-content {
+  margin: 0 !important;
+  padding: 0 !important;
 }

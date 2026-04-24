@@ -101,7 +101,7 @@ export default function ApartmentsPage() {
                 {apartment.image_url ? (
                   <Image
                     src={apartment.image_url}
-                    alt={apartment.name}
+                    alt={getLocalizedText(apartment.name)}
                     fill
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                   />

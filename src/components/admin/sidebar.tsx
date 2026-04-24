@@ -29,14 +29,7 @@ const adminNavItems = [
     href: '/admin/bookings',
     icon: Calendar
   },
-  // DISABLED: Gallery feature not ready yet
-  /*
-  {
-    title: 'Gallery',
-    href: '/admin/gallery',
-    icon: Image
-  },
-  */
+ 
   {
     title: 'Content',
     href: '/admin/content',
@@ -69,8 +62,8 @@ export function AdminSidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center border-b px-6">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-teal-500"></div>
-            <span className="text-lg font-bold text-gray-900 font-yellowtail">Venice Parcley</span>
+            
+            <span className="text-lg font-bold text-gray-900 font-yellowtail">Venice Parsley</span>
           </Link>
         </div>
 

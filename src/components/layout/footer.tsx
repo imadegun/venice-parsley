@@ -22,14 +22,14 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>Venice, Italy</li>
-              <li>info@veniceparcley.com</li>
+              <li>info@veniceparsley.com</li>
               <li>+39 123 456 7890</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Venice Parcley. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Venice Parsley. All rights reserved.</p>
         </div>
       </div>
     </footer>
