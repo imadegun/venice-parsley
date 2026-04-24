@@ -47,7 +47,33 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
 
   const currentLang = language as 'en' | 'it'
   const title = getLocalizedTitle(content?.title, currentLang) || defaultTitle
-  const pageContent = getLocalizedContent(content?.content, currentLang)
+  const rawContent = getLocalizedContent(content?.content, currentLang)
+
+  // Convert plain text with newlines to proper HTML paragraphs
+  const pageContent = rawContent ? formatContentToHtml(rawContent) : ''
+
+  // Helper function to convert plain text/markdown to HTML
+  function formatContentToHtml(text: string): string {
+    // Split by double newlines to create paragraphs
+    const paragraphs = text.split(/\n\n+/)
+    
+    return paragraphs
+      .map(p => {
+        const trimmed = p.trim()
+        if (!trimmed) return ''
+        
+        // Check if it's already HTML
+        if (trimmed.startsWith('<')) return trimmed
+        
+        // Convert single newlines to <br>
+        const withBreaks = trimmed.replace(/\n/g, '<br>')
+        
+        // Wrap in paragraph tag
+        return `<p>${withBreaks}</p>`
+      })
+      .filter(Boolean)
+      .join('\n')
+  }
 
   if (loading) {
     return (
@@ -62,28 +88,28 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
 
   return (
     <Container spacing="xxl">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Hero Section */}
         <ScrollReveal direction="up" duration={1000} delay={0}>
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-josefin">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 font-josefin tracking-tight text-left">
               {title}
             </h1>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-teal-500 mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full"></div>
           </div>
         </ScrollReveal>
 
         {/* Featured Image */}
         {content?.image_url && (
           <ScrollReveal direction="up" duration={1000} delay={200}>
-            <div className="mb-16">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div className="mb-8 md:mb-12">
+              <div className="relative rounded-xl overflow-hidden shadow-xl group">
                 <img
                   src={content.image_url}
                   alt={title}
-                  className="w-full h-64 md:h-80 lg:h-96 object-cover"
+                  className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
               </div>
             </div>
           </ScrollReveal>
@@ -92,15 +118,15 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
         {/* Map Section (for contact page) */}
         {showMap && content?.map_embed && (
           <ScrollReveal direction="up" duration={1000} delay={300}>
-            <div className="mb-16">
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="p-6 md:p-8">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 font-bebas">
+            <div className="mb-8 md:mb-12">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div className="p-4 sm:p-6 md:p-8">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-bebas tracking-wide">
                     {currentLang === 'it' ? 'DOVE TROVARCI' : 'FIND US'}
                   </h2>
-                  <div className="w-full h-80 md:h-96 rounded-xl overflow-hidden">
+                  <div className="w-full h-64 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-inner">
                     <div
-                      className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:rounded-xl"
+                      className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:rounded-lg"
                       dangerouslySetInnerHTML={{ __html: content.map_embed }}
                     />
                   </div>
@@ -113,40 +139,33 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
         {/* Content Section */}
         {pageContent ? (
           <ScrollReveal direction="up" duration={1000} delay={400}>
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <div className="p-8 md:p-12 lg:p-16">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+              <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                 {/* Content with improved typography */}
                 <div
-                  className="menu-content text-lg leading-8 font-mulish text-gray-700
-                    [&>*:first-child]:mt-0
-                    [&>*:last-child]:mb-0
-                    [&_h1]:text-3xl [&_h1]:md:text-4xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mb-6 [&_h1]:mt-8 [&_h1]:font-josefin [&_h1]:leading-tight
-                    [&_h2]:text-2xl [&_h2]:md:text-3xl [&_h2]:font-bold [&_h2]:text-gray-800 [&_h2]:mb-4 [&_h2]:mt-6 [&_h2]:font-bebas [&_h2]:tracking-wide [&_h2]:uppercase
-                    [&_h3]:text-xl [&_h3]:md:text-2xl [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mb-3 [&_h3]:mt-5 [&_h3]:font-mulish [&_h3]:leading-snug
-                    [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-gray-900 [&_h4]:mt-4 [&_h4]:mb-2 [&_h4]:font-mulish [&_h4]:leading-snug
-                    [&_h5]:text-base [&_h5]:font-semibold [&_h5]:text-gray-900 [&_h5]:mt-4 [&_h5]:mb-2 [&_h5]:font-mulish [&_h5]:leading-snug
-                    [&_h6]:text-sm [&_h6]:font-semibold [&_h6]:text-gray-900 [&_h6]:mt-4 [&_h6]:mb-2 [&_h6]:font-mulish [&_h6]:leading-snug
-                    [&_p]:text-gray-700 [&_p]:leading-8 [&_p]:mb-4 [&_p]:font-mulish [&_p]:text-base [&_p]:md:text-lg
-                    [&_strong]:font-semibold [&_strong]:text-gray-900
-                    [&_b]:font-semibold [&_b]:text-gray-900
-                    [&_em]:italic [&_em]:text-gray-600
-                    [&_i]:italic [&_i]:text-gray-600
-                    [&_a]:text-blue-600 [&_a]:hover:text-blue-800 [&_a]:underline [&_a]:font-medium [&_a]:transition-colors [&_a]:duration-200
-                    [&_ul]:space-y-2 [&_ul]:mb-4 [&_ul]:pl-6
-                    [&_ol]:space-y-2 [&_ol]:mb-4 [&_ol]:pl-6
-                    [&_li]:text-gray-700 [&_li]:font-mulish [&_li]:leading-7 [&_li]:pl-2
-                    [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:mb-4 [&_blockquote]:bg-blue-50 [&_blockquote]:py-2 [&_blockquote]:pr-4
-                    [&_img]:rounded-lg [&_img]:shadow-md [&_img]:max-w-full [&_img]:h-auto [&_img]:my-4
-                    [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-gray-300 [&_table]:mb-4 [&_table]:rounded-lg [&_table]:overflow-hidden
-                    [&_th]:border [&_th]:border-gray-300 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:bg-gray-50 [&_th]:font-semibold [&_th]:text-gray-900
-                    [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-3 [&_td]:text-left [&_td]:text-gray-700
-                    [&_hr]:border-gray-300 [&_hr]:my-8 [&_hr]:border-t
-                    [&_code]:bg-gray-100 [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono [&_code]:text-gray-800
-                    [&_pre]:bg-gray-100 [&_pre]:p-4 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:mb-4 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:border
-                    [&_div]:max-w-full
-                    [&_span]:max-w-full
-                    [&_figure]:my-6
-                    [&_figcaption]:text-sm [&_figcaption]:text-gray-600 [&_figcaption]:text-center [&_figcaption]:mt-2 [&_figcaption]:font-mulish"
+                  className="menu-content text-gray-700 prose prose-base sm:prose-lg max-w-none
+                    prose-headings:font-bold prose-headings:text-gray-900 prose-headings:mb-3 prose-headings:mt-6
+                    prose-h1:text-2xl prose-h1:sm:text-3xl prose-h1:md:text-4xl prose-h1:font-josefin prose-h1:tracking-tight prose-h1:leading-tight
+                    prose-h2:text-xl prose-h2:sm:text-2xl prose-h2:md:text-3xl prose-h2:font-bebas prose-h2:uppercase prose-h2:tracking-wide
+                    prose-h3:text-lg prose-h3:sm:text-xl prose-h3:md:text-2xl prose-h3:font-mulish
+                    prose-h4:text-base prose-h4:sm:text-lg prose-h4:font-mulish
+                    prose-p:text-gray-700 prose-p:leading-7 sm:prose-p:leading-8 prose-p:mb-4 prose-p:font-mulish prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
+                    prose-strong:font-semibold prose-strong:text-gray-900
+                    prose-em:italic prose-em:text-gray-600
+                    prose-a:text-blue-600 prose-a:hover:text-blue-800 prose-a:underline prose-a:font-medium
+                    prose-ul:mb-4 prose-ul:pl-5 prose-ul:space-y-2
+                    prose-ol:mb-4 prose-ol:pl-5 prose-ol:space-y-2
+                    prose-li:text-gray-700 prose-li:font-mulish prose-li:leading-7 prose-li:pl-2
+                    prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:mb-4 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg
+                    prose-img:rounded-lg prose-img:shadow-md prose-img:max-w-full prose-img:h-auto prose-img:my-4
+                    prose-table:w-full prose-table:border-collapse prose-table:border prose-table:border-gray-300 prose-table:mb-4 prose-table:rounded-lg prose-table:overflow-hidden
+                    prose-th:border prose-th:border-gray-300 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:bg-gray-50 prose-th:font-semibold prose-th:text-gray-900 prose-th:text-sm
+                    prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-td:text-left prose-td:text-gray-700 prose-td:text-sm
+                    prose-hr:border-gray-200 prose-hr:my-8 prose-hr:border-t-2
+                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-gray-800
+                    prose-pre:bg-gray-100 prose-pre:p-3 prose-pre:rounded prose-pre:overflow-x-auto prose-pre:mb-4 prose-pre:font-mono prose-pre:text-sm prose-pre:border
+                    prose-figure:my-6
+                    prose-figcaption:text-sm prose-figcaption:text-gray-600 prose-figcaption:text-center prose-figcaption:mt-2 prose-figcaption:font-mulish prose-figcaption:italic"
                   dangerouslySetInnerHTML={{ __html: pageContent }}
                 />
               </div>
@@ -154,16 +173,16 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
           </ScrollReveal>
         ) : (
           <ScrollReveal direction="up" duration={1000} delay={400}>
-            <div className="bg-white rounded-2xl shadow-xl p-12 md:p-16 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 md:p-12 text-center border border-gray-100">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2 font-mulish">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3 font-mulish">
                 {currentLang === 'it' ? 'Contenuto in Preparazione' : 'Content Coming Soon'}
               </h3>
-              <p className="text-gray-600 font-mulish">
+              <p className="text-gray-600 font-mulish text-sm sm:text-base md:text-lg max-w-md mx-auto">
                 {currentLang === 'it' ? 'Stiamo preparando contenuti interessanti per questa pagina.' : 'We\'re preparing interesting content for this page.'}
               </p>
             </div>

@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { MarkdownEditor } from '@/components/admin/markdown-editor'
-import { Edit } from 'lucide-react'
+import { UnifiedImageManager } from '@/components/admin/unified-image-manager'
+import { Edit, Save, FileText, MapPin, Image as ImageIcon } from 'lucide-react'
 
 interface MenuItem {
   id: string
@@ -31,6 +32,7 @@ export default function MenuPagesManagement() {
   const [contentEn, setContentEn] = useState('')
   const [contentIt, setContentIt] = useState('')
   const [mapEmbed, setMapEmbed] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
 
   useEffect(() => {
     fetchMenuItems()
@@ -80,6 +82,7 @@ export default function MenuPagesManagement() {
     setContentEn(enContent)
     setContentIt(itContent)
     setMapEmbed(item.map_embed || '')
+    setImageUrl(item.image_url || '')
     setDialogOpen(true)
   }
 
@@ -104,6 +107,7 @@ export default function MenuPagesManagement() {
           sort_order: selectedItem.sort_order,
           content: contentValue,
           map_embed: mapEmbed,
+          image_url: imageUrl,
         })
       })
 
@@ -114,6 +118,7 @@ export default function MenuPagesManagement() {
         setContentEn('')
         setContentIt('')
         setMapEmbed('')
+        setImageUrl('')
       }
     } catch (error) {
       console.error('Error saving page content:', error)
@@ -181,68 +186,97 @@ export default function MenuPagesManagement() {
                 Edit Page Content: {selectedItem?.title?.en || 'Page'}
               </DialogTitle>
             </DialogHeader>
-            <div className="px-8 pb-8 flex flex-col">
-              <form onSubmit={saveContent} className="space-y-6 flex flex-col">
-                 <Tabs defaultValue="en" className="w-full flex flex-col">
-                  <TabsList className="w-full mb-8 h-12 bg-muted/50">
-                    <TabsTrigger value="en" className="flex-1 text-base h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                      English
-                    </TabsTrigger>
-                    <TabsTrigger value="it" className="flex-1 text-base h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                      Italian
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                    <TabsContent value="en" className="mt-0 flex-1 mx-auto max-w-4xl">
-                      <MarkdownEditor
-                        value={contentEn}
-                        onChange={setContentEn}
-                        placeholder="Enter English page content..."
-                        rows={20}
-                      />
-                    </TabsContent>
+            <div className="px-8 pb-8">
+              <form onSubmit={saveContent} className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Page Content</CardTitle>
+                    <p className="text-sm text-gray-600">Enter content in both English and Italian</p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Tabs defaultValue="en" className="w-full flex flex-col">
+                      <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                        <TabsTrigger value="en" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                          <FileText className="h-4 w-4 mr-2" />
+                          English
+                        </TabsTrigger>
+                        <TabsTrigger value="it" className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Italian
+                        </TabsTrigger>
+                      </TabsList>
 
-                    <TabsContent value="it" className="mt-0 flex-1 mx-auto max-w-4xl">
-                      <MarkdownEditor
-                        value={contentIt}
-                        onChange={setContentIt}
-                        placeholder="Inserisci il contenuto della pagina in italiano..."
-                        rows={20}
-                      />
-                    </TabsContent>
-                </Tabs>
+                      <TabsContent value="en" className="space-y-4 min-h-[400px]">
+                        <MarkdownEditor
+                          value={contentEn}
+                          onChange={setContentEn}
+                          placeholder="Enter English page content..."
+                          rows={20}
+                        />
+                      </TabsContent>
 
-                <div className="pt-6 border-t space-y-3">
-                  <Label htmlFor="map_embed" className="text-base font-semibold">
-                    Location Map (Optional)
-                  </Label>
-                  {selectedItem?.href === '/about' && (
-                    <p className="text-sm text-orange-600">Not available for About page</p>
-                  )}
-                  <Textarea
-                    id="map_embed"
-                    value={mapEmbed}
-                    onChange={(e) => setMapEmbed(e.target.value)}
-                    placeholder={selectedItem?.href === '/about'
-                      ? "Map feature is not available for the About page"
-                      : "Paste Google Maps embed iframe code..."
-                    }
-                    className="min-h-[80px] font-mono text-sm w-full"
-                    disabled={selectedItem?.href === '/about'}
-                    readOnly={selectedItem?.href === '/about'}
-                  />
-                  {selectedItem?.href !== '/about' && (
-                    <p className="text-sm text-muted-foreground">
-                      Paste a Google Maps embed iframe for location display.
-                    </p>
-                  )}
-                </div>
+                      <TabsContent value="it" className="space-y-4 min-h-[400px]">
+                        <MarkdownEditor
+                          value={contentIt}
+                          onChange={setContentIt}
+                          placeholder="Inserisci il contenuto della pagina in italiano..."
+                          rows={20}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Page Image</CardTitle>
+                    <p className="text-sm text-gray-600">Upload a hero image for this page</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <UnifiedImageManager
+                      value={{ images: imageUrl ? [imageUrl] : [], mainImageIndex: 0 }}
+                      slug={`page-${selectedItem?.href?.replace('/', '') || 'page'}`}
+                      onChange={(data) => setImageUrl(data.images[0] || '')}
+                      maxFiles={1}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Location Map</CardTitle>
+                    <p className="text-sm text-gray-600">Optional Google Maps embed for location display</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {selectedItem?.href === '/about' && (
+                      <p className="text-sm text-orange-600">Not available for About page</p>
+                    )}
+                    <Textarea
+                      id="map_embed"
+                      value={mapEmbed}
+                      onChange={(e) => setMapEmbed(e.target.value)}
+                      placeholder={selectedItem?.href === '/about'
+                        ? "Map feature is not available for the About page"
+                        : "Paste Google Maps embed iframe code..."
+                      }
+                      className="min-h-[80px] font-mono text-sm w-full"
+                      disabled={selectedItem?.href === '/about'}
+                      readOnly={selectedItem?.href === '/about'}
+                    />
+                    {selectedItem?.href !== '/about' && (
+                      <p className="text-sm text-muted-foreground">
+                        Paste a Google Maps embed iframe for location display.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
 
                 <div className="flex justify-end space-x-3 pt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    <Save className="mr-2 h-4 w-4" />
                     Save Content
                   </Button>
                 </div>

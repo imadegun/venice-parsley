@@ -99,7 +99,7 @@ export default function HomeContentManagement() {
       setIntroDescriptionIt(defaultIntro.description.it)
     }
     setMetaTitle('Venice Parcley - Luxury Artistic Apartments')
-    setMetaDescription('Discover unique artistic apartments in Venice. Luxury accommodations designed for art lovers, creative souls, and discerning travelers.')
+    setMetaDescription('Discover unique artistic apartments in Venice. Creative souls, and discerning travelers.')
   }, [payload])
 
   async function loadContent() {
@@ -568,7 +568,7 @@ export default function HomeContentManagement() {
             <Card>
               <CardHeader>
                 <CardTitle>SEO Settings</CardTitle>
-                <p className="text-sm text-gray-600">Configure meta tags and SEO information</p>
+                {/* <p className="text-sm text-gray-600">Configure meta tags and SEO information</p> */}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
