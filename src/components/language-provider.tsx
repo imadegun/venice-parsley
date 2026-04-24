@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, createContext, useContext, useState, useEffect } from 'react'
+import i18n from '@/lib/i18n'
 
 export type Language = 'en' | 'it'
 
@@ -14,7 +15,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // Detect language based on browser locale
 const detectLanguage = (): Language => {
   if (typeof window === 'undefined') return 'en'
-  
+
   // Check localStorage first for user preference
   const stored = localStorage.getItem('preferred-language') as Language | null
   if (stored && (stored === 'en' || stored === 'it')) {
@@ -37,12 +38,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en')
 
   useEffect(() => {
-    setLanguageState(detectLanguage())
+    const detectedLang = detectLanguage()
+    setLanguageState(detectedLang)
+    // Also set i18next language
+    i18n.changeLanguage(detectedLang)
   }, [])
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
     localStorage.setItem('preferred-language', lang)
+    // Also change i18next language
+    i18n.changeLanguage(lang)
   }
 
   return (

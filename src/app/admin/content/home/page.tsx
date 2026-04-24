@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UnifiedImageManager } from '@/components/admin/unified-image-manager'
+import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { getContentSectionForAdmin } from '@/lib/content-service'
 import { defaultHomepageContent } from '@/lib/content'
 import { saveHomepageContent, publishHomepageContent } from './actions'
@@ -360,14 +361,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="introDescriptionEn">Description</Label>
-                      <Textarea
-                        id="introDescriptionEn"
-                        name="introDescriptionEn"
-                        value={introDescriptionEn}
-                        onChange={e => setIntroDescriptionEn(e.target.value)}
-                        className="mt-1"
-                        rows={4}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={introDescriptionEn}
+                          onChange={setIntroDescriptionEn}
+                          placeholder="Enter introduction description (English)..."
+                          rows={6}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -394,14 +395,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="introDescriptionIt">Description</Label>
-                      <Textarea
-                        id="introDescriptionIt"
-                        name="introDescriptionIt"
-                        value={introDescriptionIt}
-                        onChange={e => setIntroDescriptionIt(e.target.value)}
-                        className="mt-1"
-                        rows={4}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={introDescriptionIt}
+                          onChange={setIntroDescriptionIt}
+                          placeholder="Inserisci descrizione introduzione (Italiano)..."
+                          rows={6}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -431,14 +432,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="featuredDescriptionEn">Section Description</Label>
-                      <Textarea
-                        id="featuredDescriptionEn"
-                        name="featuredDescriptionEn"
-                        value={featuredDescriptionEn}
-                        onChange={e => setFeaturedDescriptionEn(e.target.value)}
-                        className="mt-1"
-                        rows={4}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={featuredDescriptionEn}
+                          onChange={setFeaturedDescriptionEn}
+                          placeholder="Enter featured section description (English)..."
+                          rows={6}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -455,14 +456,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="featuredDescriptionIt">Section Description</Label>
-                      <Textarea
-                        id="featuredDescriptionIt"
-                        name="featuredDescriptionIt"
-                        value={featuredDescriptionIt}
-                        onChange={e => setFeaturedDescriptionIt(e.target.value)}
-                        className="mt-1"
-                        rows={4}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={featuredDescriptionIt}
+                          onChange={setFeaturedDescriptionIt}
+                          placeholder="Inserisci descrizione sezione featured (Italiano)..."
+                          rows={6}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -492,14 +493,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="aboutContentEn">About Content</Label>
-                      <Textarea
-                        id="aboutContentEn"
-                        name="aboutContentEn"
-                        value={aboutContentEn}
-                        onChange={e => setAboutContentEn(e.target.value)}
-                        className="mt-1"
-                        rows={6}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={aboutContentEn}
+                          onChange={setAboutContentEn}
+                          placeholder="Enter about content (English)..."
+                          rows={8}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -516,14 +517,14 @@ export default function HomeContentManagement() {
                     </div>
                     <div>
                       <Label htmlFor="aboutContentIt">About Content</Label>
-                      <Textarea
-                        id="aboutContentIt"
-                        name="aboutContentIt"
-                        value={aboutContentIt}
-                        onChange={e => setAboutContentIt(e.target.value)}
-                        className="mt-1"
-                        rows={6}
-                      />
+                      <div className="mt-1">
+                        <MarkdownEditor
+                          value={aboutContentIt}
+                          onChange={setAboutContentIt}
+                          placeholder="Inserisci contenuto about (Italiano)..."
+                          rows={8}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

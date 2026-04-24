@@ -35,8 +35,8 @@ export const aboutContentSchema = z.object({
 })
 
 export const contactContentSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
+  title: localizedTextSchema,
+  description: localizedTextSchema,
   email: z.string().email().optional(),
   phone: z.string().optional(),
 })

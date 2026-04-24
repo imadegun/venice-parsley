@@ -6,7 +6,8 @@ import { createApartment, deleteApartment, updateApartment } from './actions'
 import { DataTable } from '@/components/admin/data-table'
 import { DynamicForm } from '@/components/admin/dynamic-form'
 import { ConfirmDialog } from '@/components/admin/confirm-dialog'
-import { ImageUploader } from '@/components/admin/image-uploader'
+
+
 
 
 
@@ -102,10 +103,10 @@ export default function AdminApartmentsPage() {
   }
 
   const formFields = [
-    { name: 'name', label: 'Name', type: 'text' as const, required: true },
+    { name: 'name', label: 'Name', type: 'multilang-text' as const, required: true },
     { name: 'slug', label: 'Slug (auto-generated)', type: 'text' as const, required: true, disabled: true },
-    { name: 'short_description', label: 'Short Description', type: 'text' as const },
-    { name: 'description', label: 'Description', type: 'markdown' as const, required: true },
+    { name: 'short_description', label: 'Short Description', type: 'multilang-textarea' as const },
+    { name: 'description', label: 'Description', type: 'multilang-markdown' as const, required: true },
     { name: 'base_price_cents', label: 'Base Price (cents)', type: 'number' as const, required: true },
     { name: 'max_guests', label: 'Max Guests', type: 'number' as const, required: true },
     { name: 'bedrooms', label: 'Bedrooms', type: 'number' as const, required: true },
@@ -154,6 +155,9 @@ export default function AdminApartmentsPage() {
         fields={formFields}
         initialValues={editItem ? {
           ...editItem,
+          name: { en: editItem.name || '', it: '' }, // For now, assume existing data is English
+          short_description: { en: editItem.short_description || '', it: '' },
+          description: { en: editItem.description || '', it: '' },
           amenities: editItem.amenities?.join(', '),
           unified_images: {
             images: editItem.gallery_images || [],

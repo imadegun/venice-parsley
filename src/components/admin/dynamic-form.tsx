@@ -1,17 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ImageUploader } from './image-uploader'
 import { UnifiedImageManager } from './unified-image-manager'
+import { MarkdownEditor } from './markdown-editor'
 
-type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'checkbox' | 'markdown' | 'images' | 'unified-images'
+type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'checkbox' | 'markdown' | 'images' | 'unified-images' | 'multilang-text' | 'multilang-textarea' | 'multilang-markdown'
 
 interface Field {
   name: string
@@ -46,7 +47,6 @@ export function DynamicForm({
   loading = false,
   editItem,
 }: DynamicFormProps) {
-  const isEditing = Boolean(initialValues && Object.keys(initialValues).length > 0)
   const [values, setValues] = useState<Record<string, unknown>>({})
 
   const toSlug = (input: string) =>
@@ -73,7 +73,8 @@ export function DynamicForm({
       const hasSlugField = fields.some((field) => field.name === 'slug')
 
       if (name === 'name' && hasNameField && hasSlugField) {
-        next.slug = toSlug(String(value ?? ''))
+        const nameValue = typeof value === 'object' && value && 'en' in value ? (value as { en: string }).en : String(value ?? '')
+        next.slug = toSlug(nameValue)
       }
 
       return next
@@ -114,14 +115,95 @@ export function DynamicForm({
 
       case 'markdown':
         return (
-          <Textarea
-            placeholder={field.placeholder}
+          <MarkdownEditor
             value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
+            onChange={(val) => handleChange(field.name, val)}
+            placeholder={field.placeholder}
             rows={8}
-            disabled={field.disabled}
-            className="font-mono text-sm"
           />
+        )
+
+      case 'multilang-text':
+        const multilangTextValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
+        return (
+          <Tabs defaultValue="en" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
+            </TabsList>
+            <TabsContent value="en" className="space-y-2">
+              <Input
+                placeholder={`${field.placeholder || field.label} (English)`}
+                value={multilangTextValue.en || ''}
+                onChange={(e) => handleChange(field.name, { ...multilangTextValue, en: e.target.value })}
+                disabled={field.disabled}
+              />
+            </TabsContent>
+            <TabsContent value="it" className="space-y-2">
+              <Input
+                placeholder={`${field.placeholder || field.label} (Italian)`}
+                value={multilangTextValue.it || ''}
+                onChange={(e) => handleChange(field.name, { ...multilangTextValue, it: e.target.value })}
+                disabled={field.disabled}
+              />
+            </TabsContent>
+          </Tabs>
+        )
+
+      case 'multilang-textarea':
+        const multilangTextareaValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
+        return (
+          <Tabs defaultValue="en" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
+            </TabsList>
+            <TabsContent value="en" className="space-y-2">
+              <Textarea
+                placeholder={`${field.placeholder || field.label} (English)`}
+                value={multilangTextareaValue.en || ''}
+                onChange={(e) => handleChange(field.name, { ...multilangTextareaValue, en: e.target.value })}
+                rows={5}
+                disabled={field.disabled}
+              />
+            </TabsContent>
+            <TabsContent value="it" className="space-y-2">
+              <Textarea
+                placeholder={`${field.placeholder || field.label} (Italian)`}
+                value={multilangTextareaValue.it || ''}
+                onChange={(e) => handleChange(field.name, { ...multilangTextareaValue, it: e.target.value })}
+                rows={5}
+                disabled={field.disabled}
+              />
+            </TabsContent>
+          </Tabs>
+        )
+
+      case 'multilang-markdown':
+        const multilangMarkdownValue = (value as { en?: string; it?: string } | undefined) || { en: '', it: '' }
+        return (
+          <Tabs defaultValue="en" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+              <TabsTrigger value="it">🇮🇹 Italian</TabsTrigger>
+            </TabsList>
+            <TabsContent value="en" className="space-y-2">
+              <MarkdownEditor
+                value={multilangMarkdownValue.en || ''}
+                onChange={(val) => handleChange(field.name, { ...multilangMarkdownValue, en: val })}
+                placeholder={`${field.placeholder || field.label} (English)`}
+                rows={8}
+              />
+            </TabsContent>
+            <TabsContent value="it" className="space-y-2">
+              <MarkdownEditor
+                value={multilangMarkdownValue.it || ''}
+                onChange={(val) => handleChange(field.name, { ...multilangMarkdownValue, it: val })}
+                placeholder={`${field.placeholder || field.label} (Italian)`}
+                rows={8}
+              />
+            </TabsContent>
+          </Tabs>
         )
 
       case 'checkbox':
@@ -167,7 +249,7 @@ export function DynamicForm({
         return (
           <UnifiedImageManager
             value={value as { images: string[], mainImageIndex: number } || { images: [], mainImageIndex: 0 }}
-            slug={String(values.slug ?? values.name ?? '')}
+            slug={String(values.slug ?? (typeof values.name === 'object' && values.name && 'en' in values.name ? values.name.en : values.name) ?? '')}
             onChange={(data) => handleChange(field.name, data)}
           />
         )

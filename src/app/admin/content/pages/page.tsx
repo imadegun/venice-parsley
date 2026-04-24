@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { Edit } from 'lucide-react'
 
 interface MenuItem {
@@ -190,26 +191,28 @@ export default function MenuPagesManagement() {
                 <TabsContent value="en" className="space-y-4">
                   <div>
                     <Label htmlFor="contentEn">Page Content (English)</Label>
-                    <Textarea
-                      id="contentEn"
-                      value={contentEn}
-                      onChange={(e) => setContentEn(e.target.value)}
-                      placeholder="Enter English page content..."
-                      className="min-h-60 mt-2"
-                    />
+                    <div className="mt-2">
+                      <MarkdownEditor
+                        value={contentEn}
+                        onChange={setContentEn}
+                        placeholder="Enter English page content..."
+                        rows={12}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="it" className="space-y-4">
                   <div>
                     <Label htmlFor="contentIt">Page Content (Italian)</Label>
-                    <Textarea
-                      id="contentIt"
-                      value={contentIt}
-                      onChange={(e) => setContentIt(e.target.value)}
-                      placeholder="Inserisci il contenuto della pagina in italiano..."
-                      className="min-h-60 mt-2"
-                    />
+                    <div className="mt-2">
+                      <MarkdownEditor
+                        value={contentIt}
+                        onChange={setContentIt}
+                        placeholder="Inserisci il contenuto della pagina in italiano..."
+                        rows={12}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>

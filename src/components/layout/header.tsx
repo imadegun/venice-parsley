@@ -98,7 +98,7 @@ export function Header() {
               hasScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
             }`}
           >
-            <span className="text-xl font-semibold text-white font-serif tracking-wide">Venice Parcley</span>
+            <span className="text-3xl font-bold text-white font-bebas tracking-wider uppercase">VENICE PARSLEY</span>
           </Link>
 
           <button
@@ -151,7 +151,7 @@ export function Header() {
         }`}
       >
         <Link href="/" className="flex flex-col items-center gap-1 opacity-90 hover:opacity-100 transition-opacity">
-          <span className="text-2xl md:text-3xl font-semibold text-gray-900 font-serif tracking-wide md:tracking-wider">Venice Parsley</span>
+          <span className="text-4xl md:text-5xl font-bold text-gray-900 font-bebas tracking-wider md:tracking-widest uppercase">VENICE PARSLEY</span>
            
         </Link>
       </div>

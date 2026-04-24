@@ -134,18 +134,12 @@ export function HeroSection({ heroContentData }: HeroSectionProps) {
       {/* Content */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6 md:px-4">
         <h1 className="text-[30px] md:text-7xl font-semibold mb-4 md:mb-6 leading-tight font-josefin">
-          {heroContent.title[currentLang]}
+          {/* {heroContent.title[currentLang]} */}
         </h1>
         <p className="text-base md:text-2xl mb-6 md:mb-8 text-white/90 max-w-2xl mx-auto px-2 md:px-0">
-          {heroContent.subtitle[currentLang]}
+          {/* {heroContent.subtitle[currentLang]} */}
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {/* <Button size="lg" className="text-lg px-8 py-4 bg-white text-black hover:bg-white/90">
-            {heroContent.ctaText[currentLang]}
-          </Button> */}
-          {/* View Property Types button disabled temporarily */}
-        </div>
+     
       </div>
 
       {/* Image indicators disabled temporarily */}

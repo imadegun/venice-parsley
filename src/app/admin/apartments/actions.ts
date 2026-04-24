@@ -9,9 +9,18 @@ const APARTMENT_IMAGES_BUCKET = 'apartment-images'
 
 const apartmentSchema = z.object({
   slug: z.string().min(2),
-  name: z.string().min(2),
-  description: z.string().min(10),
-  short_description: z.string().optional().default(''),
+  name: z.object({
+    en: z.string().min(2),
+    it: z.string().min(2),
+  }),
+  description: z.object({
+    en: z.string().min(10),
+    it: z.string().min(10),
+  }),
+  short_description: z.object({
+    en: z.string().optional().default(''),
+    it: z.string().optional().default(''),
+  }).optional().default({ en: '', it: '' }),
   base_price_cents: z.coerce.number().int().nonnegative(),
   max_guests: z.coerce.number().int().positive(),
   bedrooms: z.coerce.number().int().nonnegative(),
