@@ -29,7 +29,12 @@ const adminNavItems = [
     href: '/admin/bookings',
     icon: Calendar
   },
- 
+  {
+    title: 'Calendar',
+    href: '/admin/calendar',
+    icon: Calendar
+  },
+  
   {
     title: 'Content',
     href: '/admin/content',
@@ -62,7 +67,7 @@ export function AdminSidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center border-b px-6">
           <Link href="/" className="flex items-center space-x-2">
-            
+             
             <span className="text-lg font-bold text-gray-900 font-yellowtail">Venice Parsley</span>
           </Link>
         </div>

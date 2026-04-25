@@ -25,6 +25,7 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
   const [selectedDates, setSelectedDates] = useState<{ checkIn: Date; checkOut: Date } | null>(null)
   const [clientSecret, setClientSecret] = useState<string>('')
   const [bookingId, setBookingId] = useState<string>('')
+  const [datePickerRefresh, setDatePickerRefresh] = useState(0)
 
   // Guest details
   const [guestName, setGuestName] = useState('')
@@ -88,6 +89,9 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
 
       setBookingId(payload.bookingId)
 
+      // Refresh the date picker to show the newly booked dates
+      setDatePickerRefresh(prev => prev + 1)
+
       // Redirect to Stripe Payment Link if available
       if (payload.paymentUrl) {
         // Store booking ID in sessionStorage so we can redirect after payment
@@ -134,6 +138,7 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
         console.error('Error loading apartment:', error)
       }
     }
+
     loadApartment()
   }, [apartmentId])
 
@@ -164,7 +169,7 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
       {/* Progress Steps */}
       <div className="flex items-center justify-center mb-8">
         <div className="flex items-center space-x-4">
-          {[
+          {[ 
             { step: 'dates', label: 'Select Dates', icon: Calendar },
             { step: 'details', label: 'Guest Details', icon: Users },
             { step: 'payment', label: 'Payment', icon: CreditCard },
@@ -198,6 +203,7 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
                 <DateRangePicker
                   apartment={apartment}
                   onDateRangeSelect={handleDateRangeSelect}
+                  refreshTrigger={datePickerRefresh}
                 />
               </CardContent>
             </Card>
@@ -224,7 +230,6 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
                     <Label htmlFor="guest-email">Email *</Label>
                     <Input
                       id="guest-email"
-                      type="email"
                       value={guestEmail}
                       onChange={(e) => setGuestEmail(e.target.value)}
                       placeholder="john@example.com"

@@ -34,7 +34,11 @@ export default async function BookingConfirmationPage({ params }: ConfirmationPa
     notFound()
   }
 
-  const apartmentName = (booking.apartments as { name?: string } | null)?.name || 'Apartment stay'
+  const apartmentName = (booking.apartments as any)?.name 
+    ? typeof (booking.apartments as any).name === 'object' 
+      ? (booking.apartments as any).name?.en || (booking.apartments as any).name?.it || 'Apartment stay'
+      : (booking.apartments as any).name
+    : 'Apartment stay'
 
   const checkIn = booking.check_in_date ? new Date(booking.check_in_date) : null
   const checkOut = booking.check_out_date ? new Date(booking.check_out_date) : null

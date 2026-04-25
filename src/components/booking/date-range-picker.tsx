@@ -12,9 +12,10 @@ type Apartment = Database['public']['Tables']['apartments']['Row']
 interface DateRangePickerProps {
   apartment: Apartment
   onDateRangeSelect: (checkIn: Date, checkOut: Date) => void
+  refreshTrigger?: number  // Increment to force refresh of booked dates
 }
 
-export function DateRangePicker({ apartment, onDateRangeSelect }: DateRangePickerProps) {
+export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }: DateRangePickerProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [checkIn, setCheckIn] = useState<Date | null>(null)
   const [checkOut, setCheckOut] = useState<Date | null>(null)
@@ -33,11 +34,12 @@ export function DateRangePicker({ apartment, onDateRangeSelect }: DateRangePicke
         }
 
         const supabase = createClient()
+        // Fetch all non-cancelled bookings (confirmed, completed, or occupied)
         const { data, error } = await supabase
           .from('bookings')
-          .select('check_in_date, check_out_date')
+          .select('check_in_date, check_out_date, status, check_in_actual, check_out_actual')
           .eq('apartment_id', apartment.id)
-          .eq('status', 'confirmed')
+          .neq('status', 'cancelled')
 
         if (error) {
           console.error('Supabase error:', error)
@@ -47,6 +49,10 @@ export function DateRangePicker({ apartment, onDateRangeSelect }: DateRangePicke
 
         const dates = new Set<string>()
         data?.forEach(booking => {
+          // For cancelled bookings, don't mark as booked
+          if (booking.status === 'cancelled') return
+          
+          // Use scheduled check-in/check-out dates for availability
           const start = new Date(booking.check_in_date)
           const end = new Date(booking.check_out_date)
           const days = eachDayOfInterval({ start, end })
@@ -62,7 +68,7 @@ export function DateRangePicker({ apartment, onDateRangeSelect }: DateRangePicke
     }
 
     fetchBookedDates()
-  }, [apartment.id])
+  }, [apartment.id, refreshTrigger])
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)

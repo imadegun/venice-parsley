@@ -112,59 +112,65 @@ export interface Database {
           is_active?: boolean
         }
       }
-      bookings: {
-        Row: {
-          id: string
-          created_at: string
-          updated_at: string
-          user_id: string
-          apartment_id: string | null
-          transportation_id: string | null
-          check_in_date: string | null
-          check_out_date: string | null
-          service_date: string | null
-          service_time: string | null
-          total_guests: number | null
-          total_cents: number
-          status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          special_requests: string | null
-          contact_info: Json
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          user_id: string
-          apartment_id?: string | null
-          transportation_id?: string | null
-          check_in_date?: string | null
-          check_out_date?: string | null
-          service_date?: string | null
-          service_time?: string | null
-          total_guests?: number | null
-          total_cents: number
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          special_requests?: string | null
-          contact_info: Json
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          user_id?: string
-          apartment_id?: string | null
-          transportation_id?: string | null
-          check_in_date?: string | null
-          check_out_date?: string | null
-          service_date?: string | null
-          service_time?: string | null
-          total_guests?: number | null
-          total_cents?: number
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          special_requests?: string | null
-          contact_info?: Json
-        }
-      }
+       bookings: {
+         Row: {
+           id: string
+           created_at: string
+           updated_at: string
+           user_id: string
+           apartment_id: string | null
+           transportation_id: string | null
+           check_in_date: string | null
+           check_out_date: string | null
+           check_in_actual: string | null
+           check_out_actual: string | null
+           service_date: string | null
+           service_time: string | null
+           total_guests: number | null
+           total_cents: number
+           status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+           special_requests: string | null
+           contact_info: Json
+         }
+         Insert: {
+           id?: string
+           created_at?: string
+           updated_at?: string
+           user_id: string
+           apartment_id?: string | null
+           transportation_id?: string | null
+           check_in_date?: string | null
+           check_out_date?: string | null
+           check_in_actual?: string | null
+           check_out_actual?: string | null
+           service_date?: string | null
+           service_time?: string | null
+           total_guests?: number | null
+           total_cents: number
+           status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+           special_requests?: string | null
+           contact_info: Json
+         }
+         Update: {
+           id?: string
+           created_at?: string
+           updated_at?: string
+           user_id?: string
+           apartment_id?: string | null
+           transportation_id?: string | null
+           check_in_date?: string | null
+           check_out_date?: string | null
+           check_in_actual?: string | null
+           check_out_actual?: string | null
+           service_date?: string | null
+           service_time?: string | null
+           total_guests?: number | null
+           total_cents?: number
+           status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+           special_requests?: string | null
+           contact_info?: Json
+         }
+       }
       profiles: {
         Row: {
           id: string

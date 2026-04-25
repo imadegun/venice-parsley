@@ -45,7 +45,11 @@ export default async function MyBookingsPage() {
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => {
-            const apartmentName = (booking.apartments as { name?: string } | null)?.name || 'Apartment stay'
+            const apartmentName = (booking.apartments as any)?.name 
+              ? typeof (booking.apartments as any).name === 'object' 
+                ? (booking.apartments as any).name?.en || (booking.apartments as any).name?.it || 'Apartment stay'
+                : (booking.apartments as any).name
+              : 'Apartment stay'
 
             return (
               <Card key={booking.id}>
