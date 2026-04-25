@@ -25,6 +25,7 @@ const apartmentSchema = z.object({
   max_guests: z.coerce.number().int().positive(),
   bedrooms: z.coerce.number().int().nonnegative(),
   amenities: z.string().optional().default(''),
+  stripe_payment_link_url: z.string().optional().default(''),
   unified_images: z.object({
     images: z.array(z.string()),
     mainImageIndex: z.number().int().min(0)
@@ -191,30 +192,69 @@ function toStringArray(input?: string) {
 }
 
 export async function createApartment(data: FormData | Record<string, unknown>) {
-  const formData = data instanceof FormData ? data :
-    Object.entries(data).reduce((fd, [key, value]) => {
-      if (key === 'unified_images' && typeof value === 'object' && value !== null) {
-        fd.append(key, JSON.stringify(value))
-      } else {
-        fd.append(key, String(value ?? ''))
-      }
-      return fd
-    }, new FormData())
   await requireRole(['admin', 'administrator'])
   const supabase = createServerSupabaseClient()
 
-  const parsed = apartmentSchema.safeParse({
-    slug: formData.get('slug'),
-    name: formData.get('name'),
-    description: formData.get('description'),
-    short_description: formData.get('short_description')?.toString(),
-    base_price_cents: formData.get('base_price_cents'),
-    max_guests: formData.get('max_guests'),
-    bedrooms: formData.get('bedrooms'),
-    amenities: formData.get('amenities')?.toString(),
-    unified_images: parseUnifiedImages(formData.get('unified_images')),
-    is_active: parseIsActive(formData.get('is_active')),
-  })
+  let parsedData: any
+
+  if (data instanceof FormData) {
+    const nameValue = data.get('name')?.toString()
+    const descriptionValue = data.get('description')?.toString()
+    const shortDescriptionValue = data.get('short_description')?.toString()
+
+    let parsedName: any = nameValue
+    let parsedDescription: any = descriptionValue
+    let parsedShortDescription: any = shortDescriptionValue
+
+    try {
+      if (nameValue && nameValue.startsWith('{')) {
+        parsedName = JSON.parse(nameValue)
+      }
+    } catch {}
+
+    try {
+      if (descriptionValue && descriptionValue.startsWith('{')) {
+        parsedDescription = JSON.parse(descriptionValue)
+      }
+    } catch {}
+
+    try {
+      if (shortDescriptionValue && shortDescriptionValue.startsWith('{')) {
+        parsedShortDescription = JSON.parse(shortDescriptionValue)
+      }
+    } catch {}
+
+    parsedData = {
+      slug: data.get('slug'),
+      name: parsedName,
+      description: parsedDescription,
+      short_description: parsedShortDescription,
+      base_price_cents: data.get('base_price_cents'),
+      max_guests: data.get('max_guests'),
+      bedrooms: data.get('bedrooms'),
+      amenities: data.get('amenities')?.toString(),
+      stripe_payment_link_url: data.get('stripe_payment_link_url')?.toString(),
+      unified_images: parseUnifiedImages(data.get('unified_images')),
+      is_active: parseIsActive(data.get('is_active')),
+    }
+  } else {
+    const raw = data as Record<string, unknown>
+    parsedData = {
+      slug: raw.slug,
+      name: raw.name,
+      description: raw.description,
+      short_description: raw.short_description || { en: '', it: '' },
+      base_price_cents: raw.base_price_cents,
+      max_guests: raw.max_guests,
+      bedrooms: raw.bedrooms,
+      amenities: raw.amenities,
+      stripe_payment_link_url: raw.stripe_payment_link_url || '',
+      unified_images: raw.unified_images || { images: [], mainImageIndex: 0 },
+      is_active: raw.is_active ?? true,
+    }
+  }
+
+  const parsed = apartmentSchema.safeParse(parsedData)
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message || 'Invalid apartment form data')
@@ -232,6 +272,7 @@ export async function createApartment(data: FormData | Record<string, unknown>) 
     max_guests: payload.max_guests,
     bedrooms: payload.bedrooms,
     amenities: toStringArray(payload.amenities),
+    stripe_payment_link_url: payload.stripe_payment_link_url || null,
     gallery_images: storageImages,
     image_url: storageImages[payload.unified_images.mainImageIndex] || null,
     is_active: payload.is_active,
@@ -243,35 +284,79 @@ export async function createApartment(data: FormData | Record<string, unknown>) 
 }
 
 export async function updateApartment(data: FormData | Record<string, unknown>) {
-  const formData = data instanceof FormData ? data :
-    Object.entries(data).reduce((fd, [key, value]) => {
-      if (key === 'unified_images' && typeof value === 'object' && value !== null) {
-        fd.append(key, JSON.stringify(value))
-      } else {
-        fd.append(key, String(value ?? ''))
-      }
-      return fd
-    }, new FormData())
   await requireRole(['admin', 'administrator'])
   const supabase = createServerSupabaseClient()
-  const id = formData.get('id')?.toString()
+  const id = data instanceof FormData ? data.get('id')?.toString() : (data as any).id
 
   if (!id) throw new Error('Apartment id is required')
 
-  const parsed = apartmentSchema.safeParse({
-    slug: formData.get('slug'),
-    name: formData.get('name'),
-    description: formData.get('description'),
-    short_description: formData.get('short_description')?.toString(),
-    base_price_cents: formData.get('base_price_cents'),
-    max_guests: formData.get('max_guests'),
-    bedrooms: formData.get('bedrooms'),
-    amenities: formData.get('amenities')?.toString(),
-    unified_images: parseUnifiedImages(formData.get('unified_images')),
-    is_active: parseIsActive(formData.get('is_active')),
-  })
+  // Handle both FormData and Record<string, unknown> inputs
+  let parsedData: any
+
+  if (data instanceof FormData) {
+    // Parse FormData
+    const nameValue = data.get('name')?.toString()
+    const descriptionValue = data.get('description')?.toString()
+    const shortDescriptionValue = data.get('short_description')?.toString()
+
+    // Parse JSON strings for multilang fields
+    let parsedName: any = nameValue
+    let parsedDescription: any = descriptionValue
+    let parsedShortDescription: any = shortDescriptionValue
+
+    try {
+      if (nameValue && nameValue.startsWith('{')) {
+        parsedName = JSON.parse(nameValue)
+      }
+    } catch {}
+
+    try {
+      if (descriptionValue && descriptionValue.startsWith('{')) {
+        parsedDescription = JSON.parse(descriptionValue)
+      }
+    } catch {}
+
+    try {
+      if (shortDescriptionValue && shortDescriptionValue.startsWith('{')) {
+        parsedShortDescription = JSON.parse(shortDescriptionValue)
+      }
+    } catch {}
+
+    parsedData = {
+      slug: data.get('slug'),
+      name: parsedName,
+      description: parsedDescription,
+      short_description: parsedShortDescription,
+      base_price_cents: data.get('base_price_cents'),
+      max_guests: data.get('max_guests'),
+      bedrooms: data.get('bedrooms'),
+      amenities: data.get('amenities')?.toString(),
+      stripe_payment_link_url: data.get('stripe_payment_link_url')?.toString(),
+      unified_images: parseUnifiedImages(data.get('unified_images')),
+      is_active: parseIsActive(data.get('is_active')),
+    }
+  } else {
+    // Handle Record<string, unknown> directly (from DynamicForm)
+    const raw = data as Record<string, unknown>
+    parsedData = {
+      slug: raw.slug,
+      name: raw.name,
+      description: raw.description,
+      short_description: raw.short_description || { en: '', it: '' },
+      base_price_cents: raw.base_price_cents,
+      max_guests: raw.max_guests,
+      bedrooms: raw.bedrooms,
+      amenities: raw.amenities,
+      stripe_payment_link_url: raw.stripe_payment_link_url || '',
+      unified_images: raw.unified_images || { images: [], mainImageIndex: 0 },
+      is_active: raw.is_active ?? true,
+    }
+  }
+
+  const parsed = apartmentSchema.safeParse(parsedData)
 
   if (!parsed.success) {
+    console.error('Validation errors:', JSON.stringify(parsed.error.issues, null, 2))
     throw new Error(parsed.error.issues[0]?.message || 'Invalid apartment form data')
   }
 
@@ -308,6 +393,7 @@ export async function updateApartment(data: FormData | Record<string, unknown>) 
       max_guests: payload.max_guests,
       bedrooms: payload.bedrooms,
       amenities: toStringArray(payload.amenities),
+      stripe_payment_link_url: payload.stripe_payment_link_url || null,
       gallery_images: storageImages,
       image_url: storageImages[payload.unified_images.mainImageIndex] || null,
       is_active: payload.is_active,

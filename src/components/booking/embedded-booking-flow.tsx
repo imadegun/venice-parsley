@@ -86,9 +86,17 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
         throw new Error(payload?.error || 'Failed to create booking')
       }
 
-      setClientSecret(payload.clientSecret)
       setBookingId(payload.bookingId)
-      setStep('payment')
+
+      // Redirect to Stripe Payment Link if available
+      if (payload.paymentUrl) {
+        // Store booking ID in sessionStorage so we can redirect after payment
+        sessionStorage.setItem('lastBookingId', payload.bookingId)
+        window.location.href = payload.paymentUrl
+      } else {
+        // Fallback: show error if no payment link configured
+        setError('Payment link not configured for this apartment. Please contact us directly.')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to proceed to payment')
     } finally {
@@ -128,6 +136,20 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
     }
     loadApartment()
   }, [apartmentId])
+
+  // Check if user returned from Stripe payment and redirect to confirmation
+  useEffect(() => {
+    const lastBookingId = sessionStorage.getItem('lastBookingId')
+    if (lastBookingId) {
+      // User was in the middle of booking - check if they returned from payment
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('stripe_return') === 'true') {
+        // Redirect to confirmation page
+        window.location.href = `/booking/confirmation/${lastBookingId}`
+        sessionStorage.removeItem('lastBookingId')
+      }
+    }
+  }, [])
 
   if (!apartment) {
     return (
@@ -249,8 +271,8 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
             </Card>
           )}
 
-          {/* Booking Summary - Always visible on left */}
-          {selectedDates && (
+          {/* Booking Summary - Only visible after guest details step */}
+          {(step === 'details' || step === 'payment') && selectedDates && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -260,7 +282,11 @@ export function EmbeddedBookingFlow({ apartmentId }: EmbeddedBookingFlowProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-gray-900">{apartment.name}</h4>
+                  <h4 className="font-medium text-gray-900">
+                    {typeof apartment.name === 'object' && apartment.name !== null 
+                      ? (apartment.name as any).en || apartment.name 
+                      : apartment.name}
+                  </h4>
                   <p className="text-sm text-gray-600">Venice, Italy</p>
                 </div>
 

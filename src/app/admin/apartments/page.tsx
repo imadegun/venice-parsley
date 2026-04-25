@@ -116,7 +116,12 @@ export default function AdminApartmentsPage() {
   ]
 
   const tableColumns = [
-    { key: 'name', label: 'Name' },
+    { key: 'name', label: 'Name', render: (item: Apartment) => {
+      if (typeof item.name === 'object' && item.name !== null) {
+        return item.name.en || item.name.it || 'Untitled'
+      }
+      return item.name || 'Untitled'
+    }},
     { key: 'max_guests', label: 'Guests' },
     { key: 'base_price_cents', label: 'Price', render: (item: Apartment) => `$${(item.base_price_cents / 100).toFixed(2)}` },
     { key: 'size_sqm', label: 'Size', render: (item: Apartment) => `${item.size_sqm} m²` },

@@ -316,7 +316,7 @@ export function DateRangePicker({ apartment, onDateRangeSelect }: DateRangePicke
 
       {checkIn && !checkOut && (
         <p className="text-sm text-blue-600 text-center py-2 flex items-center justify-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse inline-block"></span>
           Now select your check-out date
         </p>
       )}
