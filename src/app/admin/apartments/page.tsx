@@ -111,6 +111,7 @@ export default function AdminApartmentsPage() {
     { name: 'max_guests', label: 'Max Guests', type: 'number' as const, required: true },
     { name: 'bedrooms', label: 'Bedrooms', type: 'number' as const, required: true },
     { name: 'amenities', label: 'Amenities (comma separated)', type: 'text' as const },
+    { name: 'stripe_payment_link_url', label: 'Stripe Payment Link URL', type: 'text' as const, placeholder: 'https://buy.stripe.com/...' },
     { name: 'unified_images', label: 'Apartment Images', type: 'unified-images' as const, required: true },
   ]
 

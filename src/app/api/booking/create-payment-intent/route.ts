@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { createServerAuthClient } from '@/lib/supabase-server'
-import { stripe } from '@/lib/stripe'
 
 const createPaymentIntentSchema = z.object({
   apartmentId: z.string().uuid(),
@@ -45,9 +44,10 @@ export async function POST(request: Request) {
     const payload = parsed.data
     const supabase = createServerSupabaseClient()
 
+    // Get apartment with Stripe Payment Link URL
     const { data: apartment, error: apartmentError } = await supabase
       .from('apartments')
-      .select('id, slug, name, base_price_cents, max_guests, is_active')
+      .select('id, slug, name, base_price_cents, max_guests, is_active, stripe_payment_link_url')
       .eq('id', payload.apartmentId)
       .eq('is_active', true)
       .single()
@@ -65,25 +65,7 @@ export async function POST(request: Request) {
     const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)))
     const totalCents = nights * apartment.base_price_cents
 
-    // Temporarily disable availability check for testing
-    // TODO: Re-enable after fixing date overlap logic
-    /*
-    const { data: overlappingBookings, error: overlapError } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('apartment_id', apartment.id)
-      .in('status', ['pending', 'confirmed'])
-      .or(`and(check_in_date.lte.${payload.checkOutDate},check_out_date.gte.${payload.checkInDate})`)
-
-    if (overlapError) {
-      return NextResponse.json({ error: overlapError.message }, { status: 500 })
-    }
-
-    if (overlappingBookings && overlappingBookings.length > 0) {
-      return NextResponse.json({ error: 'Selected dates are no longer available' }, { status: 409 })
-    }
-    */
-
+    // Create booking record first
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert({
@@ -108,28 +90,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: bookingError?.message || 'Unable to create booking' }, { status: 500 })
     }
 
-    // Create PaymentIntent instead of Checkout Session
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalCents,
-      currency: 'eur',
-      metadata: {
-        booking_id: booking.id,
-        user_id: user.id,
-        apartment_id: apartment.id,
-        guest_email: payload.guestEmail,
-        guest_name: payload.guestName,
-      },
-      description: `${apartment.name} (${nights} night${nights > 1 ? 's' : ''})`,
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    })
-
+    // Return the apartment's Stripe Payment Link URL for redirect
+    // The payment link should be configured by the apartment owner in their Stripe dashboard
     return NextResponse.json({
       bookingId: booking.id,
-      clientSecret: paymentIntent.client_secret,
+      paymentUrl: apartment.stripe_payment_link_url || null,
       amount: totalCents,
       currency: 'eur',
+      apartmentName: apartment.name,
+      nights,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected booking error'
