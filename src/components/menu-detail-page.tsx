@@ -6,6 +6,7 @@ import { ScrollReveal } from '@/components/animations/scroll-reveal'
 import { createClient } from '@/lib/supabase'
 import { useLanguage } from '@/components/language-provider'
 import { getLocalizedContent, getLocalizedTitle } from '@/lib/i18n-content'
+import ContactForm from '@/components/contact/contact-form'
 
 interface MenuPageContent {
   title: { en: string; it: string }
@@ -115,7 +116,16 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
           </ScrollReveal>
         )}
 
-        {/* Map Section (for contact page) */}
+        {/* Contact Form (for contact page) - Display FIRST */}
+        {href === '/contact' && (
+          <ScrollReveal direction="up" duration={1000} delay={200}>
+            <div className="mb-8 md:mb-12">
+              <ContactForm language={currentLang as 'en' | 'it'} />
+            </div>
+          </ScrollReveal>
+        )}
+
+        {/* Map Section (for contact page) - Display AFTER form */}
         {showMap && content?.map_embed && (
           <ScrollReveal direction="up" duration={1000} delay={300}>
             <div className="mb-8 md:mb-12">

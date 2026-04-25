@@ -21,9 +21,10 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>Venice, Italy</li>
-              <li>info@veniceparsley.com</li>
-              <li>+39 123 456 7890</li>
+              <li>Rio Terà dei Biri o del Parsemolo, 5384,</li>
+              <li>30121 Venezia VE, Italy</li>
+              <li>30121 Venezia VE, Italy</li>
+              <li>E-mail info@veniceparsley.com</li>
             </ul>
           </div>
         </div>
