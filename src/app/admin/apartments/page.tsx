@@ -6,6 +6,7 @@ import { createApartment, deleteApartment, updateApartment } from './actions'
 import { DataTable } from '@/components/admin/data-table'
 import { DynamicForm } from '@/components/admin/dynamic-form'
 import { ConfirmDialog } from '@/components/admin/confirm-dialog'
+import { Home, FileText, Image as ImageIcon, Settings } from 'lucide-react'
 
 
 
@@ -103,16 +104,28 @@ export default function AdminApartmentsPage() {
   }
 
   const formFields = [
-    { name: 'name', label: 'Name', type: 'multilang-text' as const, required: true },
-    { name: 'slug', label: 'Slug (auto-generated)', type: 'text' as const, required: true, disabled: true },
-    { name: 'short_description', label: 'Short Description', type: 'multilang-textarea' as const },
-    { name: 'description', label: 'Description', type: 'multilang-markdown' as const, required: true },
-    { name: 'base_price_cents', label: 'Base Price (cents)', type: 'number' as const, required: true },
-    { name: 'max_guests', label: 'Max Guests', type: 'number' as const, required: true },
-    { name: 'bedrooms', label: 'Bedrooms', type: 'number' as const, required: true },
-    { name: 'amenities', label: 'Amenities (comma separated)', type: 'text' as const },
-    { name: 'stripe_payment_link_url', label: 'Stripe Payment Link URL', type: 'text' as const, placeholder: 'https://buy.stripe.com/...' },
-    { name: 'unified_images', label: 'Apartment Images', type: 'unified-images' as const, required: true },
+    { name: 'name', label: 'Name', type: 'multilang-text' as const, required: true, tab: 'basic' },
+    { name: 'slug', label: 'Slug (auto-generated)', type: 'text' as const, required: true, disabled: true, tab: 'basic' },
+    { name: 'base_price_cents', label: 'Base Price (cents)', type: 'number' as const, required: true, tab: 'basic' },
+    { name: 'max_guests', label: 'Max Guests', type: 'number' as const, required: true, tab: 'basic' },
+    { name: 'bedrooms', label: 'Bedrooms', type: 'number' as const, required: true, tab: 'basic' },
+    { name: 'short_description', label: 'Short Description', type: 'multilang-textarea' as const, tab: 'content' },
+    { name: 'description', label: 'Description', type: 'multilang-markdown' as const, required: true, tab: 'content' },
+    { name: 'amenities', label: 'Amenities (comma separated)', type: 'text' as const, tab: 'content' },
+    { name: 'unified_images', label: 'Apartment Images', type: 'unified-images' as const, required: true, tab: 'images' },
+    { name: 'stripe_payment_link_url', label: 'Stripe Payment Link URL', type: 'text' as const, placeholder: 'https://buy.stripe.com/...', tab: 'settings' },
+  ]
+
+  const formTabs = [
+    { key: 'basic', label: 'Basic Info', icon: Home },
+    { key: 'content', label: 'Content', icon: FileText },
+    { key: 'images', label: 'Images', icon: ImageIcon },
+    { key: 'settings', label: 'Settings', icon: Settings },
+  ]
+
+  const formLanguages = [
+    { code: 'en', label: 'English' },
+    { code: 'it', label: 'Italian' },
   ]
 
   const tableColumns = [
@@ -134,8 +147,10 @@ export default function AdminApartmentsPage() {
   return (
     <div className="space-y-8 py-8">
       <div className="animate-title">
-        <h1 className="text-3xl font-semibold text-gray-900">Apartments Management</h1>
-        <p className="text-gray-600">Create, update, and delete apartment inventory.</p>
+        <h1 className="text-3xl font-bold text-gray-900">Apartments Management</h1>
+        <p className="text-gray-600 mt-2">
+          Create, update, and delete apartment inventory.
+        </p>
       </div>
 
       <DataTable
@@ -176,6 +191,9 @@ export default function AdminApartmentsPage() {
         title={editItem ? 'Edit Apartment' : 'Add New Apartment'}
         submitText={editItem ? 'Update Apartment' : 'Create Apartment'}
         loading={formLoading}
+        tabs={formTabs}
+        useTabs={true}
+        languages={formLanguages}
       />
 
       <ConfirmDialog

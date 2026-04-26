@@ -8,9 +8,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUploader } from './image-uploader'
 import { UnifiedImageManager } from './unified-image-manager'
 import { MarkdownEditor } from './markdown-editor'
+import { LucideIcon } from 'lucide-react'
 
 type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'checkbox' | 'markdown' | 'images' | 'unified-images' | 'multilang-text' | 'multilang-textarea' | 'multilang-markdown'
 
@@ -22,6 +24,19 @@ interface Field {
   required?: boolean
   options?: { value: string; label: string }[]
   disabled?: boolean
+  tab?: string // Which tab this field belongs to
+}
+
+interface TabConfig {
+  key: string
+  label: string
+  icon?: LucideIcon
+}
+
+interface LanguageConfig {
+  code: string
+  label: string
+  flag?: string
 }
 
 interface DynamicFormProps {
@@ -34,6 +49,9 @@ interface DynamicFormProps {
   submitText?: string
   loading?: boolean
   editItem?: Record<string, unknown>
+  tabs?: TabConfig[] // Optional tabs configuration
+  useTabs?: boolean // Whether to use the new tabbed layout
+  languages?: LanguageConfig[] // Dynamic language configuration
 }
 
 export function DynamicForm({
@@ -46,6 +64,12 @@ export function DynamicForm({
   submitText = 'Save',
   loading = false,
   editItem,
+  tabs = [],
+  useTabs = false,
+  languages = [
+    { code: 'en', label: 'English' },
+    { code: 'it', label: 'Italian' }
+  ],
 }: DynamicFormProps) {
   const [values, setValues] = useState<Record<string, unknown>>({})
 
@@ -84,13 +108,28 @@ export function DynamicForm({
 
   const handleChange = (name: string, value: unknown) => {
     setValues(prev => {
-      const next = { ...prev, [name]: value }
+      const next = { ...prev }
+
+      // Handle nested field names (like "name.en")
+      if (name.includes('.')) {
+        const [baseName, lang] = name.split('.')
+        const baseValue = prev[baseName]
+        next[baseName] = {
+          ...(typeof baseValue === 'object' && baseValue ? baseValue : {}),
+          [lang]: value
+        }
+      } else {
+        next[name] = value
+      }
 
       const hasNameField = fields.some((field) => field.name === 'name')
       const hasSlugField = fields.some((field) => field.name === 'slug')
 
-      if (name === 'name' && hasNameField && hasSlugField) {
-        const nameValue = typeof value === 'object' && value && 'en' in value ? (value as { en: string }).en : String(value ?? '')
+      // Auto-generate slug when name changes
+      if ((name === 'name' || name.startsWith('name.')) && hasNameField && hasSlugField) {
+        const nameValue = typeof next.name === 'object' && next.name && 'en' in next.name
+          ? (next.name as { en: string }).en
+          : String(next.name ?? '')
         next.slug = toSlug(nameValue)
       }
 
@@ -98,13 +137,42 @@ export function DynamicForm({
     })
   }
 
+  // Group fields by tabs for the new layout
+  const getFieldsByTab = () => {
+    if (!useTabs) return { default: fields }
+
+    const grouped: Record<string, Field[]> = {}
+    fields.forEach(field => {
+      const tabKey = field.tab || 'basic'
+      if (!grouped[tabKey]) grouped[tabKey] = []
+      grouped[tabKey].push(field)
+    })
+    return grouped
+  }
+
+  const fieldsByTab = getFieldsByTab()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await onSubmit(values)
   }
 
   const renderField = (field: Field) => {
-    const value = values[field.name]
+    // Handle modified field names for multilingual fields in tabs
+    let fieldName = field.name
+    let fieldValue = values[field.name]
+
+    // If the field name contains a dot (like "name.en"), extract the base field and language
+    if (field.name.includes('.')) {
+      const [baseName, lang] = field.name.split('.')
+      fieldName = baseName
+      const baseValue = values[baseName]
+      fieldValue = typeof baseValue === 'object' && baseValue && lang in baseValue
+        ? (baseValue as Record<string, unknown>)[lang]
+        : ''
+    }
+
+    const value = fieldValue
 
     switch (field.type) {
       case 'text':
@@ -114,7 +182,7 @@ export function DynamicForm({
             type={field.type}
             placeholder={field.placeholder}
             value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
+            onChange={(e) => handleChange(fieldName, e.target.value)}
             disabled={field.disabled}
           />
         )
@@ -124,7 +192,7 @@ export function DynamicForm({
           <Textarea
             placeholder={field.placeholder}
             value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
+            onChange={(e) => handleChange(fieldName, e.target.value)}
             rows={5}
             disabled={field.disabled}
           />
@@ -272,23 +340,94 @@ export function DynamicForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 max-w-5xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 max-w-6xl">
         <DialogHeader className="px-8 pt-8 pb-6 border-b">
           <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
         </DialogHeader>
         <div className="px-8 pb-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="max-w-3xl mx-auto w-full space-y-6">
-              {fields.map((field) => (
-                <div key={field.name} className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
-                    {field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </Label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
+          <form onSubmit={handleSubmit} className={useTabs ? "max-w-6xl mx-auto w-full space-y-6" : "space-y-6"}>
+            {useTabs ? (
+              <Tabs defaultValue={tabs[0]?.key || 'basic'} className="w-full flex flex-col">
+                <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <TabsTrigger
+                        key={tab.key}
+                        value={tab.key}
+                        className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                      >
+                        {Icon && <Icon className="h-4 w-4 mr-2" />}
+                        {tab.label}
+                      </TabsTrigger>
+                    )
+                  })}
+                </TabsList>
+
+                {tabs.map((tab) => (
+                  <TabsContent key={tab.key} value={tab.key} className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{tab.label}</CardTitle>
+                        <p className="text-sm text-gray-600">Configure {tab.label.toLowerCase()} settings</p>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {fieldsByTab[tab.key]?.map((field) => {
+                          if (field.type === 'multilang-text' || field.type === 'multilang-textarea' || field.type === 'multilang-markdown') {
+                            return (
+                              <Tabs key={field.name} defaultValue={languages[0]?.code || 'en'} className="w-full flex flex-col">
+                                <TabsList className="w-full mb-6 h-12 bg-muted/50">
+                                  {languages.map((lang) => (
+                                    <TabsTrigger
+                                      key={lang.code}
+                                      value={lang.code}
+                                      className="flex-1 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                    >
+                                      {lang.label}
+                                    </TabsTrigger>
+                                  ))}
+                                </TabsList>
+
+                                {languages.map((lang) => (
+                                  <TabsContent key={lang.code} value={lang.code} className="space-y-4 min-h-[400px]">
+                                    <div>
+                                      <Label htmlFor={`${field.name}-${lang.code}`}>{field.label} ({lang.label})</Label>
+                                      {renderField({ ...field, name: `${field.name}.${lang.code}` })}
+                                    </div>
+                                  </TabsContent>
+                                ))}
+                              </Tabs>
+                            )
+                          }
+
+                          return (
+                            <div key={field.name} className="space-y-2">
+                              <Label className="text-sm font-medium text-gray-700">
+                                {field.label}
+                                {field.required && <span className="text-red-500 ml-1">*</span>}
+                              </Label>
+                              {renderField(field)}
+                            </div>
+                          )
+                        })}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            ) : (
+              <div className="max-w-6xl mx-auto w-full space-y-6">
+                {fields.map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-6 border-t">
               <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
