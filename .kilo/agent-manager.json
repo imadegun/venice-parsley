@@ -34,6 +34,27 @@
       "parentBranch": "master",
       "createdAt": "2026-04-24T08:33:30.427Z",
       "remote": "origin"
+    },
+    "wt-1777207546023-1": {
+      "branch": "shining-cause",
+      "path": "e:\\Programing\\Bmad-Speckit\\venice parsley\\.kilo\\worktrees\\shining-cause",
+      "parentBranch": "stripe_connect",
+      "createdAt": "2026-04-26T12:45:46.023Z",
+      "remote": "origin"
+    },
+    "wt-1777207622566-2": {
+      "branch": "iron-tamarillo",
+      "path": "e:\\Programing\\Bmad-Speckit\\venice parsley\\.kilo\\worktrees\\iron-tamarillo",
+      "parentBranch": "stripe_connect",
+      "createdAt": "2026-04-26T12:47:02.566Z",
+      "remote": "origin"
+    },
+    "wt-1777207834925-3": {
+      "branch": "ritzy-surprise",
+      "path": "e:\\Programing\\Bmad-Speckit\\venice parsley\\.kilo\\worktrees\\ritzy-surprise",
+      "parentBranch": "stripe_connect",
+      "createdAt": "2026-04-26T12:50:34.925Z",
+      "remote": "origin"
     }
   },
   "sessions": {
@@ -52,13 +73,33 @@
     "ses_241635935ffeJk3Kd1SdMx7iOK": {
       "worktreeId": "wt-1777019429957-2",
       "createdAt": "2026-04-24T08:30:31.370Z"
+    },
+    "ses_2362ce606ffeV52HocVEjcHJr5": {
+      "worktreeId": "wt-1777207546023-1",
+      "createdAt": "2026-04-26T12:45:48.660Z"
+    },
+    "ses_236312888ffeWqZ8gcHbcRE094": {
+      "worktreeId": "wt-1777207622566-2",
+      "createdAt": "2026-04-26T12:47:02.576Z"
+    },
+    "ses_236287056ffeoGtwH5aaSR0EvZ": {
+      "worktreeId": "wt-1777207834925-3",
+      "createdAt": "2026-04-26T12:50:41.351Z"
     }
+  },
+  "tabOrder": {
+    "local": [
+      "pending:1"
+    ]
   },
   "worktreeOrder": [
     "wt-1776915737484-1",
     "wt-1776916434249-2",
     "wt-1777014063778-1",
     "wt-1777019429957-2",
-    "wt-1777019610427-3"
+    "wt-1777019610427-3",
+    "wt-1777207546023-1",
+    "wt-1777207622566-2",
+    "wt-1777207834925-3"
   ]
 }

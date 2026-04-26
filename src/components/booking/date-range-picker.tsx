@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { format, addDays, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isBefore, startOfDay, isWithinInterval, isAfter } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/lib/supabase'
+
 import type { Database } from '@/types/database'
 
 type Apartment = Database['public']['Tables']['apartments']['Row']
@@ -21,47 +21,38 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
   const [checkOut, setCheckOut] = useState<Date | null>(null)
   const [hoverDate, setHoverDate] = useState<Date | null>(null)
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set())
+  const [pendingDates, setPendingDates] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
   // Fetch booked dates for this apartment
   useEffect(() => {
     const fetchBookedDates = async () => {
       try {
-        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-          console.warn('Supabase environment variables not set - booked dates unavailable')
+        console.log('Fetching booked dates for apartment:', apartment.id)
+        const response = await fetch(`/api/apartments/${apartment.id}/availability`)
+
+        if (!response.ok) {
+          console.error('API error:', response.status, response.statusText)
+          setBookedDates(new Set())
+          setPendingDates(new Set())
           setLoading(false)
           return
         }
 
-        const supabase = createClient()
-        // Fetch all non-cancelled bookings (confirmed, completed, or occupied)
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('check_in_date, check_out_date, status, check_in_actual, check_out_actual')
-          .eq('apartment_id', apartment.id)
-          .neq('status', 'cancelled')
+        const data = await response.json()
+        console.log('Fetched availability:', data)
 
-        if (error) {
-          console.error('Supabase error:', error)
-          setBookedDates(new Set())
-          return
-        }
+        const booked = new Set(data.bookedDates || [])
+        const pending = new Set(data.pendingDates || [])
 
-        const dates = new Set<string>()
-        data?.forEach(booking => {
-          // For cancelled bookings, don't mark as booked
-          if (booking.status === 'cancelled') return
-          
-          // Use scheduled check-in/check-out dates for availability
-          const start = new Date(booking.check_in_date)
-          const end = new Date(booking.check_out_date)
-          const days = eachDayOfInterval({ start, end })
-          days.forEach(day => dates.add(format(day, 'yyyy-MM-dd')))
-        })
-        setBookedDates(dates)
+        console.log('Final booked dates:', Array.from(booked))
+        console.log('Final pending dates:', Array.from(pending))
+        setBookedDates(booked)
+        setPendingDates(pending)
       } catch (error) {
         console.error('Error fetching booked dates:', error)
         setBookedDates(new Set())
+        setPendingDates(new Set())
       } finally {
         setLoading(false)
       }
@@ -88,10 +79,18 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
   const allDays = [...prevMonthDays, ...monthDays, ...nextMonthDays]
 
   const isDateBooked = (date: Date) => bookedDates.has(format(date, 'yyyy-MM-dd'))
-  const isDateDisabled = (date: Date) => isBefore(date, startOfDay(new Date())) || isDateBooked(date)
+  const isDatePending = (date: Date) => pendingDates.has(format(date, 'yyyy-MM-dd'))
+  const isDateUnavailable = (date: Date) => bookedDates.has(format(date, 'yyyy-MM-dd')) || pendingDates.has(format(date, 'yyyy-MM-dd'))
+  const isDateDisabled = (date: Date) => isBefore(date, startOfDay(new Date())) || isDateUnavailable(date)
 
   const handleDateClick = (date: Date) => {
     if (isDateDisabled(date)) return
+
+    // Prevent selecting dates that would conflict with existing bookings
+    const dateStr = format(date, 'yyyy-MM-dd')
+    if (bookedDates.has(dateStr) || pendingDates.has(dateStr)) {
+      return // Date is unavailable
+    }
 
     if (!checkIn) {
       // First click: set check-in
@@ -100,7 +99,19 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
     } else if (checkIn && !checkOut) {
       // Second click: set check-out (must be after check-in)
       if (isAfter(date, checkIn)) {
-        setCheckOut(date)
+        // Check if any dates in the range are booked
+        const rangeDates = eachDayOfInterval({ start: checkIn, end: date })
+        const hasConflict = rangeDates.some(d => {
+          const dStr = format(d, 'yyyy-MM-dd')
+          return bookedDates.has(dStr) || pendingDates.has(dStr)
+        })
+
+        if (hasConflict) {
+          // Don't allow selection if there's a conflict in the range
+          return
+        } else {
+          setCheckOut(date)
+        }
       } else {
         // If clicked before check-in, reset check-in to new date
         setCheckIn(date)
@@ -113,7 +124,7 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
   }
 
   const handleDateMouseEnter = (date: Date) => {
-    if (checkIn && !checkOut && !isDateDisabled(date) && isAfter(date, checkIn)) {
+    if (checkIn && !checkOut && isAfter(date, checkIn)) {
       setHoverDate(date)
     }
   }
@@ -146,8 +157,13 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
       className += 'bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow-md '
     } else if (isCheckOut) {
       className += 'bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow-md '
-    } else if (isInRange && isCurrentMonth && !isDisabled) {
-      className += 'bg-blue-100 text-blue-900 '
+    } else if (isInRange && isCurrentMonth) {
+      // Show range highlighting even over disabled dates for visual feedback
+      if (isDisabled) {
+        className += 'bg-red-100 text-red-900 '
+      } else {
+        className += 'bg-blue-100 text-blue-900 '
+      }
     }
 
     return className.trim()
@@ -264,7 +280,9 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
               `}
               title={
                 isDisabled && isDateBooked(date)
-                  ? 'Not available'
+                  ? 'Confirmed booking - Not available'
+                  : isDisabled && isDatePending(date)
+                  ? 'Pending booking - Not available'
                   : isDisabled && isBefore(date, startOfDay(new Date()))
                   ? 'Past date'
                   : format(date, 'MMMM d, yyyy')
@@ -272,7 +290,10 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
             >
               {format(date, 'd')}
               {isDateBooked(date) && isCurrentMonth && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-400 rounded-full"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-red-500 rounded-full"></div>
+              )}
+              {isDatePending(date) && !isDateBooked(date) && isCurrentMonth && (
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-yellow-500 rounded-full"></div>
               )}
             </button>
           )
@@ -290,8 +311,12 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
           <span>Your stay</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-gray-100 border border-gray-200"></div>
-          <span>Unavailable</span>
+          <div className="w-2 h-2 rounded-full bg-red-500"></div>
+          <span>Booked</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+          <span>Pending</span>
         </div>
       </div>
 

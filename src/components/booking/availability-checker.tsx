@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format, addDays, isSameDay, isToday, isTomorrow, differenceInDays } from 'date-fns'
+import { format, addDays, isSameDay, isToday, isTomorrow, differenceInDays, isBefore, eachDayOfInterval } from 'date-fns'
 import { Calendar, Home, Users, Euro } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { createClient } from '@/lib/supabase'
 import type { Database } from '@/types/database'
 
 type Apartment = Database['public']['Tables']['apartments']['Row']
@@ -49,29 +48,36 @@ export function AvailabilityChecker({ apartmentId, onBookingSelect }: Availabili
     }
   }
 
-  const checkAvailability = async () => {
-    if (!apartment) return false
+    const checkAvailability = async () => {
+      if (!apartment) return false
 
-    setCheckingAvailability(true)
-    try {
-      // Check if apartment is booked during selected dates
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('apartment_id', apartmentId)
-        .eq('status', 'confirmed')
-        .or(`and(check_in_date.lte.${format(checkOutDate, 'yyyy-MM-dd')},check_out_date.gte.${format(checkInDate, 'yyyy-MM-dd')})`)
+      setCheckingAvailability(true)
+      try {
+        // Check if apartment is booked during selected dates using the availability API
+        const response = await fetch(`/api/apartments/${apartmentId}/availability`)
+        if (!response.ok) {
+          throw new Error('Failed to check availability')
+        }
 
-      if (error) throw error
+        const data = await response.json()
+        const bookedSet = new Set(data.bookedDates || [])
+        const pendingSet = new Set(data.pendingDates || [])
 
-      return !bookings || bookings.length === 0
-    } catch (error) {
-      console.error('Error checking availability:', error)
-      return false
-    } finally {
-      setCheckingAvailability(false)
+        // Check if any selected dates are booked
+        const selectedDates = eachDayOfInterval({ start: checkInDate, end: addDays(checkOutDate, -1) })
+        const hasConflict = selectedDates.some(date => {
+          const dateStr = format(date, 'yyyy-MM-dd')
+          return bookedSet.has(dateStr) || pendingSet.has(dateStr)
+        })
+
+        return !hasConflict
+      } catch (error) {
+        console.error('Error checking availability:', error)
+        return false
+      } finally {
+        setCheckingAvailability(false)
+      }
     }
-  }
 
   const calculateTotalPrice = () => {
     if (!apartment) return 0

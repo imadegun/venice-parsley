@@ -34,6 +34,15 @@ export default async function BookingConfirmationPage({ params }: ConfirmationPa
     notFound()
   }
 
+  // Update booking status to confirmed if it's still pending (payment was successful)
+  if (booking.status === 'pending') {
+    await supabase
+      .from('bookings')
+      .update({ status: 'confirmed' })
+      .eq('id', id)
+      .eq('user_id', user.id)
+  }
+
   const apartmentName = (booking.apartments as any)?.name 
     ? typeof (booking.apartments as any).name === 'object' 
       ? (booking.apartments as any).name?.en || (booking.apartments as any).name?.it || 'Apartment stay'

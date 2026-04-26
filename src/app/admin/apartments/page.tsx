@@ -13,11 +13,11 @@ import { ConfirmDialog } from '@/components/admin/confirm-dialog'
 
 interface Apartment {
   id: string
-  name: string
+  name: string | { en: string; it: string }
   slug: string
   category: string
-  description: string
-  short_description: string
+  description: string | { en: string; it: string }
+  short_description: string | null
   base_price_cents: number
   max_guests: number
   bedrooms: number

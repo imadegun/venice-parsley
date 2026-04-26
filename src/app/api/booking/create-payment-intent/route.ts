@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         check_out_date: payload.checkOutDate,
         total_guests: payload.totalGuests,
         total_cents: totalCents,
-        status: 'pending',
+        status: 'confirmed', // Set to confirmed immediately since payment link will be paid
         special_requests: payload.specialRequests || null,
         contact_info: {
           guest_name: payload.guestName,

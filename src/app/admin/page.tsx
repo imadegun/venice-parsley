@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3">
-              <Link
+              {/* <Link
                 href="/admin/gallery"
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
               >
@@ -103,7 +103,7 @@ export default async function AdminDashboard() {
                   <span>Manage Gallery</span>
                 </div>
                 <span className="text-sm text-gray-500">→</span>
-              </Link>
+              </Link> */}
 
               <Link
                 href="/admin/content"
