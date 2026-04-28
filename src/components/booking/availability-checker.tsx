@@ -5,6 +5,7 @@ import { format, addDays, isSameDay, isToday, isTomorrow, differenceInDays, isBe
 import { Calendar, Home, Users, Euro } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase'
 
 import type { Database } from '@/types/database'
 

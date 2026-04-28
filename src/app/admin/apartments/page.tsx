@@ -18,7 +18,7 @@ interface Apartment {
   slug: string
   category: string
   description: string | { en: string; it: string }
-  short_description: string | null
+  short_description: string | { en: string; it: string } | null
   base_price_cents: number
   max_guests: number
   bedrooms: number
@@ -70,7 +70,6 @@ export default function AdminApartmentsPage() {
 
   const handleDelete = (item: Apartment) => {
     setDeleteItem(item)
-    setShowDeleteConfirm(true)
   }
 
   const handleFormSubmit = async (values: Record<string, unknown>) => {

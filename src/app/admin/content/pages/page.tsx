@@ -108,7 +108,7 @@ export default function MenuPagesManagement() {
         // Check if it's the old format (array of strings) or new format (array of objects)
         if (typeof item.documents[0] === 'string') {
           // Old format: convert to new format
-          processedDocuments = (item.documents as string[]).map(url => ({
+          processedDocuments = (item.documents as unknown as string[]).map(url => ({
             url,
             title: getFileName(url)
           }))
