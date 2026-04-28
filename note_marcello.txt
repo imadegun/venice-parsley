@@ -118,4 +118,5 @@ pg_restore -h [NEON_HOST] -U [NEON_USER] -d [NEON_DB] -v supabase_dump.sql
 Replace connection details (host, user, db) from your providers' settings. Update your app's connection string to Neon's, then test.
 
 
-+0
+vercel
+Next, because the project is almost finished, please help with the guide to publish it on Versel because it will be used for staging before going into live production.
