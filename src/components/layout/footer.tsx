@@ -10,8 +10,9 @@ export function Footer() {
           <div className="flex-1">
             <h3 className="font-semibold mb-4 text-left">Information</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/apartments" className="hover:text-white">CIR : 027042-LOC-15600</Link></li>
-              <li><Link href="/apartments?type=artistic-studio" className="hover:text-white">CIN : IT027042C2ADIO77EW</Link></li>
+              <li>CA' ASIA (II° piano) CIR : 027042-LOC-15600- CIN : IT027042C2ADIO77EW</li>
+              <li>CA' TERA' (I° piano) CIR : 027042-LOC-13278 - CIN : IT027042C29WMT6NPE</li>
+              <li>CA' BIRI (I° piano) CIR : 027042-LOC-13277 - CIN : IT027042C2BPV9VAZQ</li>
                              
             </ul>
           </div>
@@ -22,8 +23,7 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>Rio Terà dei Biri o del Parsemolo, 5384,</li>
-              <li>30121 Venezia VE, Italy</li>
-              <li>30121 Venezia VE, Italy</li>
+              <li>30121 Venezia VE, Italy</li>             
               <li>E-mail info@veniceparsley.com</li>
             </ul>
           </div>
