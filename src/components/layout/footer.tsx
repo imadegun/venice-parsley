@@ -8,7 +8,7 @@ export function Footer() {
           
           {/* Quick Links - Align Left */}
           <div className="flex-1">
-            <h3 className="font-semibold mb-4 text-left">Information</h3>
+            <h3 className="font-semibold mb-4 text-left">Accomodation Codes</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>CA' ASIA (II° piano) CIR : 027042-LOC-15600- CIN : IT027042C2ADIO77EW</li>
               <li>CA' TERA' (I° piano) CIR : 027042-LOC-18099 - CIN : IT027042B45YSIFS3T</li>

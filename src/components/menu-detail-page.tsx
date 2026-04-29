@@ -185,7 +185,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
                     prose-p:text-gray-700 prose-p:leading-7 sm:prose-p:leading-8 prose-p:mb-4 prose-p:font-mulish prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
                     prose-strong:font-semibold prose-strong:text-gray-900
                     prose-em:italic prose-em:text-gray-600
-                    prose-a:text-blue-600 prose-a:hover:text-blue-800 prose-a:underline prose-a:font-medium
+                    prose-a:text-blue-600 prose-a:hover:text-blue-800 prose-a:underline prose-a:font-medium prose-a:transition-colors prose-a:duration-200 prose-a:ease-in-out prose-a:hover:bg-blue-50 prose-a:px-1 prose-a:py-0.5 prose-a:rounded prose-a:hover:shadow-sm
                     prose-ul:mb-4 prose-ul:pl-5 prose-ul:space-y-2
                     prose-ol:mb-4 prose-ol:pl-5 prose-ol:space-y-2
                     prose-li:text-gray-700 prose-li:font-mulish prose-li:leading-7 prose-li:pl-2
