@@ -101,20 +101,30 @@ export default function MenuPagesManagement() {
     setContentIt(itContent)
     setMapEmbed(item.map_embed || '')
     setImageUrl(item.image_url || '')
-    // Convert old format (string[]) to new format if needed
+    // Convert old format (string[]) or string to new format if needed
     let processedDocuments: Array<{url: string, title: string}> = []
     if (item.documents) {
-      if (Array.isArray(item.documents) && item.documents.length > 0) {
+      let documentsArray: any[] = []
+      if (typeof item.documents === 'string') {
+        try {
+          documentsArray = JSON.parse(item.documents)
+        } catch {
+          documentsArray = []
+        }
+      } else if (Array.isArray(item.documents)) {
+        documentsArray = item.documents
+      }
+      if (documentsArray.length > 0) {
         // Check if it's the old format (array of strings) or new format (array of objects)
-        if (typeof item.documents[0] === 'string') {
+        if (typeof documentsArray[0] === 'string') {
           // Old format: convert to new format
-          processedDocuments = (item.documents as unknown as string[]).map(url => ({
+          processedDocuments = (documentsArray as string[]).map(url => ({
             url,
             title: getFileName(url)
           }))
         } else {
           // New format: use as is
-          processedDocuments = item.documents as Array<{url: string, title: string}>
+          processedDocuments = documentsArray as Array<{url: string, title: string}>
         }
       }
     }
@@ -155,6 +165,7 @@ export default function MenuPagesManagement() {
         await fetchMenuItems()
       } else {
         // Revert local state on error
+        alert('Failed to save document changes')
         setDocuments(documents)
       }
     } catch (error) {
@@ -202,6 +213,7 @@ export default function MenuPagesManagement() {
         setDocuments([])
         setDownloadsEnabled(false)
       } else {
+        alert('Failed to save page content')
         console.error('Failed to save page content')
       }
     } catch (error) {

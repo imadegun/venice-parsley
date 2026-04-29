@@ -60,6 +60,7 @@ export function Header() {
         { id: '3', href: '/neighbourhood', title: { en: 'Neighbourhood' }, is_active: true, sort_order: 3 },
         { id: '4', href: '/how-to-get-here', title: { en: 'How to get here' }, is_active: true, sort_order: 4 },
         { id: '5', href: '/contact', title: { en: 'Contact with map' }, is_active: true, sort_order: 5 },
+        { id: '6', href: '/venice-tips-and-suggestions', title: { en: 'Venice tips and suggestions ' }, is_active: true, sort_order: 6 },
       ])
     }
   }
@@ -89,7 +90,7 @@ export function Header() {
       {/* Mobile Header */}
       <header
         className="mobile-header fixed top-0 left-0 right-0 h-16 px-5 md:hidden z-[250] animate-header-entrance"
-        style={{ backgroundColor: themeSettings?.theme_colors?.header_bg_left || '#10223f' }}
+        style={{ backgroundColor: themeSettings?.theme_colors?.header_bg_left || '#1b211a' }}
       >
         <div className="flex h-full items-center justify-between">
           <Link
@@ -98,13 +99,13 @@ export function Header() {
               hasScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
             }`}
           >
-            <span className="text-4xl text-white font-playfair tracking-wider uppercase">VENICE PARSLEY</span>
+            <span className="text-4xl text-white font-playfair tracking-wider">VENICE PARSLEY</span>
           </Link>
 
           <button
             type="button"
             onClick={toggleMenu}
-            className="flex items-center gap-2 font-playfair uppercase tracking-[0.14em] text-sm font-semibold text-white group"
+            className="flex items-center gap-2 font-playfair tracking-[0.14em] text-sm text-white group"
             aria-label="Toggle menu"
           >
             <span className="transition-all duration-300 group-hover:tracking-widest">Menu</span>
@@ -127,11 +128,11 @@ export function Header() {
           <div
             className="h-25 px-6 text-white flex items-center justify-center border-t-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.25)] transition-all duration-500 ease-out hover:scale-105"
             style={{
-              backgroundColor: themeSettings?.theme_colors?.header_bg_left || '#003049',
+              backgroundColor: themeSettings?.theme_colors?.header_bg_left || '#1b211a',
               borderRadius: '0 0 50px 0'
             }}
           >
-            <div className="flex items-center space-x-3 font-playfair uppercase text-base md:text-lg tracking-wider font-semibold">
+            <div className="flex items-center space-x-3 font-playfair text-base md:text-lg tracking-wider">
               <Calendar className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-500 ease-out group-hover:rotate-12 group-hover:scale-110" />
               <span className="relative inline-block overflow-hidden">
                 <span className="relative block transition-all duration-500 ease-out group-hover:tracking-[0.2em] group-hover:text-yellow-200">
@@ -151,7 +152,7 @@ export function Header() {
         }`}
       >
         <Link href="/" className="flex flex-col items-center gap-1 opacity-90 hover:opacity-100 transition-opacity">
-          <span className="text-5xl md:text-6xl text-gray-900 font-playfair tracking-wider md:tracking-widest uppercase">VENICE PARSLEY</span>
+          <span className="text-5xl md:text-6xl text-gray-900 font-playfair tracking-wider md:tracking-widest">VENICE PARSLEY</span>
            
         </Link>
       </div>
@@ -167,7 +168,7 @@ export function Header() {
           }}
           aria-label="Toggle menu"
         >
-          <div className="flex items-center space-x-3 font-playfair uppercase text-base md:text-lg tracking-wider font-semibold">
+          <div className="flex items-center space-x-3 font-playfair text-base md:text-lg tracking-wider">
             <span className="relative inline-block overflow-hidden">
               <span className="relative block transition-all duration-500 ease-out group-hover:tracking-[0.2em] group-hover:text-yellow-200">
                 MENU
@@ -194,7 +195,7 @@ export function Header() {
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           style={{
-            backgroundColor: themeSettings ? `${themeSettings.theme_colors.header_bg_right}80` : 'rgba(168, 85, 247, 0.5)'
+            backgroundColor: themeSettings ? `${themeSettings.theme_colors.header_bg_right}80` : 'rgba(27, 33, 26, 0.5)'
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -206,7 +207,7 @@ export function Header() {
                   <Link
                     href={item.href}
                     onClick={closeMenu}
-                    className="block px-6 py-2 text-lg font-medium text-white hover:text-yellow-300 hover:translate-x-2 transition-all duration-200"
+                    className="block px-6 py-2 text-lg font-playfair text-white hover:text-yellow-300 hover:translate-x-2 transition-all duration-200"
                   >
                     › {item.title?.[language] || item.title?.en || 'Untitled'}
                   </Link>
@@ -234,7 +235,7 @@ export function Header() {
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           style={{
-            backgroundColor: themeSettings ? `${themeSettings.theme_colors.header_bg_right}80` : 'rgba(168, 85, 247, 0.5)'
+            backgroundColor: themeSettings ? `${themeSettings.theme_colors.header_bg_right}80` : 'rgba(27, 33, 26, 0.5)'
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -246,7 +247,7 @@ export function Header() {
                   <Link
                     href={item.href}
                     onClick={closeMenu}
-                    className="block px-8 py-3 text-xl font-medium text-white hover:text-yellow-300 hover:translate-x-4 transition-all duration-200"
+                    className="block px-8 py-3 text-xl font-playfair text-white hover:text-yellow-300 hover:translate-x-4 transition-all duration-200"
                   >
                     › {item.title?.[language] || item.title?.en || 'Untitled'}
                   </Link>

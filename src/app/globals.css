@@ -370,6 +370,8 @@
 
   .font-playfair {
     font-family: var(--font-playfair);
+    font-weight: 400;
+    text-transform: uppercase;
   }
 }
 

@@ -60,8 +60,9 @@ async function uploadFileToMenuDocumentsStorage(file: File, menuItemId: string) 
   await ensureMenuDocumentsBucketConfig()
 
   const supabase = createServerSupabaseClient()
-  const extension = file.name.includes('.') ? file.name.split('.').pop() : 'pdf'
-  const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+  const extension = file.name.split('.').pop() || 'pdf'
+  const sanitizedFileName = nameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, '_')
   const filePath = `menu-items/${menuItemId}/${crypto.randomUUID()}-${Date.now()}-${sanitizedFileName}.${extension}`
 
   const uploadOptions = {

@@ -77,7 +77,7 @@ export default function ApartmentsPage() {
   return (
     <Container spacing="xxl">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 animate-title font-playfair">
+        <h1 className="text-4xl md:text-5xl text-gray-900 mb-8 animate-title font-playfair">
           {homepageContent?.featured.title?.[currentLang] ?? homepageContent?.featured.title?.en ?? 'Luxury Apartments'}
         </h1>
         <p className="text-lg text-gray-600 font-mulish leading-8 mb-12 max-w-4xl animate-title-delay-1">

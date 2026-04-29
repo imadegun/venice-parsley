@@ -99,7 +99,7 @@ export default function ApartmentDetailPage() {
     <Container spacing="xxl">
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="space-y-3">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 animate-title font-playfair">
+          <h1 className="text-4xl md:text-5xl text-gray-900 mb-4 animate-title font-playfair">
             {getLocalizedText(apartment.name)}
           </h1>
           <p className="text-lg text-gray-600 font-mulish leading-8 max-w-4xl animate-title-delay-1">
@@ -127,7 +127,7 @@ export default function ApartmentDetailPage() {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <section className="lg:col-span-2 space-y-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 animate-title font-playfair">About this apartment</h2>
+            <h2 className="text-2xl md:text-3xl text-gray-900 mb-4 animate-title font-playfair">About this apartment</h2>
             <p className="text-lg text-gray-600 font-mulish leading-8 whitespace-pre-line">{getLocalizedText(apartment.description)}</p>
           </section>
 
@@ -140,7 +140,7 @@ export default function ApartmentDetailPage() {
 
         {(apartment.amenities?.length || 0) > 0 && (
           <section className="space-y-3">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 animate-title-delay-1 font-playfair">Amenities</h2>
+            <h2 className="text-2xl md:text-3xl text-gray-900 mb-4 animate-title-delay-1 font-playfair">Amenities</h2>
             <div className="flex flex-wrap gap-2">
               {apartment.amenities?.map((amenity) => (
                 <Badge key={amenity} variant="secondary">{amenity}</Badge>
@@ -150,7 +150,7 @@ export default function ApartmentDetailPage() {
         )}
 
         <section className="space-y-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-playfair">Book this apartment</h2>
+          <h2 className="text-2xl md:text-3xl text-gray-900 font-playfair">Book this apartment</h2>
           <EmbeddedBookingFlow apartmentId={apartment.id} />
         </section>
       </div>

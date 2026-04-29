@@ -229,7 +229,10 @@ export function UnifiedDocumentManager({
       const urlObj = new URL(url)
       const pathname = urlObj.pathname
       const parts = pathname.split('/')
-      return parts[parts.length - 1]?.split('-').slice(2).join('-') || 'Document'
+      const fileName = parts[parts.length - 1] || ''
+      // Remove the generated prefix: uuid-timestamp-
+      const cleanedName = fileName.replace(/^[a-f0-9-]+-\d+-/, '')
+      return cleanedName || 'Document'
     } catch {
       return 'Document'
     }
@@ -259,6 +262,7 @@ export function UnifiedDocumentManager({
             className="hidden"
           />
           <Button
+            type="button"
             variant="secondary"
             size="sm"
             onClick={(e) => { e.preventDefault(); fileInputRef.current?.click() }}
@@ -294,12 +298,12 @@ export function UnifiedDocumentManager({
                           }}
                           autoFocus
                         />
-                        <Button size="sm" onClick={saveTitle} className="h-8 px-2">
-                          Save
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={cancelEditing} className="h-8 px-2">
-                          Cancel
-                        </Button>
+                         <Button type="button" size="sm" onClick={saveTitle} className="h-8 px-2">
+                           Save
+                         </Button>
+                         <Button type="button" size="sm" variant="outline" onClick={cancelEditing} className="h-8 px-2">
+                           Cancel
+                         </Button>
                       </div>
                     ) : (
                       <div>
@@ -313,17 +317,19 @@ export function UnifiedDocumentManager({
                 </div>
                 <div className="flex items-center gap-1 ml-2">
                   {editingIndex !== index && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => startEditingTitle(index)}
-                      className="h-8 w-8 p-0"
-                      title="Edit title"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
+                     <Button
+                       type="button"
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => startEditingTitle(index)}
+                       className="h-8 w-8 p-0"
+                       title="Edit title"
+                     >
+                       <Edit2 className="h-4 w-4" />
+                     </Button>
                   )}
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => window.open(document.url, '_blank')}
@@ -333,6 +339,7 @@ export function UnifiedDocumentManager({
                     <Download className="h-4 w-4" />
                   </Button>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => void removeDocument(index)}
