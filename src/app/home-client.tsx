@@ -96,10 +96,10 @@ export default function HomeClient() {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-xs md:text-sm uppercase tracking-[0.28em] text-gray-600 font-montserrat mb-4">
+              <p className="text-xs md:text-sm uppercase tracking-[0.28em] text-gray-600 font-playfair mb-4">
                 {homepageContent.intro?.tagline?.[currentLang] ?? homepageContent.intro?.tagline?.en ?? ''}
               </p>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-josefin">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-playfair">
                 {homepageContent.intro?.title?.[currentLang] ?? homepageContent.intro?.title?.en ?? ''}
               </h1>
               <div className="mx-auto mb-8 h-[2px] w-24 bg-gradient-to-r from-transparent via-gray-400 to-transparent" />
@@ -117,7 +117,7 @@ export default function HomeClient() {
           <div className="container mx-auto px-4">
             <div className="grid gap-12 lg:grid-cols-2 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 font-bebas">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 font-playfair">
                   {homepageContent.about.title?.[currentLang] ?? homepageContent.about.title?.en ?? ''}
                 </h2>
                 <p className="text-lg text-gray-600 mb-6 font-mulish leading-8 max-w-2xl">
@@ -165,7 +165,7 @@ export default function HomeClient() {
       <ScrollReveal direction="up" duration={1000} delay={800}>
         <section className="py-16 bg-gradient-to-r from-blue-600 to-teal-600 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-josefin">Ready for an Artistic Experience?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-playfair">Ready for an Artistic Experience?</h2>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto font-mulish leading-8">
               Book your stay in one of Venice's most unique and inspiring apartments today.
             </p>
@@ -189,7 +189,7 @@ export default function HomeClient() {
       <div className="mobile-bottom-cta fixed bottom-0 left-0 right-0 md:hidden px-3 pb-3">
         <Link
           href="/apartments"
-          className="flex h-14 w-full items-center justify-center rounded-t-[20px] bg-pink-500 text-white font-montserrat text-sm font-semibold uppercase tracking-[0.18em] shadow-[0_-6px_20px_rgba(0,0,0,0.2)]"
+          className="flex h-14 w-full items-center justify-center rounded-t-[20px] bg-pink-500 text-white font-playfair text-sm font-semibold uppercase tracking-[0.18em] shadow-[0_-6px_20px_rgba(0,0,0,0.2)]"
         >
           BOOK NOW
         </Link>

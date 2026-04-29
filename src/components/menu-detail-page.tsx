@@ -116,10 +116,10 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
         {/* Hero Section */}
         <ScrollReveal direction="up" duration={1000} delay={0}>
           <div className="mb-6 md:mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 font-josefin tracking-tight text-left">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 font-playfair tracking-tight text-left">
               {title}
             </h1>
-            <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full"></div>
+            {/* <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full"></div> */}
           </div>
         </ScrollReveal>
 
@@ -154,7 +154,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
             <div className="mb-8 md:mb-12">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                 <div className="p-4 sm:p-6 md:p-8">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-bebas tracking-wide">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
                     {currentLang === 'it' ? 'DOVE TROVARCI' : 'FIND US'}
                   </h2>
                   <div className="w-full h-64 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-inner">
@@ -227,7 +227,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
           <ScrollReveal direction="up" duration={1000} delay={500}>
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mt-8 md:mt-12">
               <div className="p-4 sm:p-6 md:p-8">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-bebas tracking-wide">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
                   {currentLang === 'it' ? 'DOCUMENTI SCARICABILI' : 'DOWNLOADABLE DOCUMENTS'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,12 +240,13 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
                           <p className="text-xs sm:text-sm text-gray-500">PDF Document</p>
                         </div>
                       </div>
-                      <a
-                        href={document.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                      >
+                       <a
+                         href={document.url}
+                         download={document.title}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                       >
                         <Download className="h-4 w-4" />
                         {currentLang === 'it' ? 'Scarica' : 'Download'}
                       </a>

@@ -104,7 +104,7 @@ export function Header() {
           <button
             type="button"
             onClick={toggleMenu}
-            className="flex items-center gap-2 font-montserrat uppercase tracking-[0.14em] text-sm font-semibold text-white group"
+            className="flex items-center gap-2 font-playfair uppercase tracking-[0.14em] text-sm font-semibold text-white group"
             aria-label="Toggle menu"
           >
             <span className="transition-all duration-300 group-hover:tracking-widest">Menu</span>
@@ -131,7 +131,7 @@ export function Header() {
               borderRadius: '0 0 50px 0'
             }}
           >
-            <div className="flex items-center space-x-3 font-montserrat uppercase text-base md:text-lg tracking-wider font-semibold">
+            <div className="flex items-center space-x-3 font-playfair uppercase text-base md:text-lg tracking-wider font-semibold">
               <Calendar className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-500 ease-out group-hover:rotate-12 group-hover:scale-110" />
               <span className="relative inline-block overflow-hidden">
                 <span className="relative block transition-all duration-500 ease-out group-hover:tracking-[0.2em] group-hover:text-yellow-200">
@@ -167,7 +167,7 @@ export function Header() {
           }}
           aria-label="Toggle menu"
         >
-          <div className="flex items-center space-x-3 font-montserrat uppercase text-base md:text-lg tracking-wider font-semibold">
+          <div className="flex items-center space-x-3 font-playfair uppercase text-base md:text-lg tracking-wider font-semibold">
             <span className="relative inline-block overflow-hidden">
               <span className="relative block transition-all duration-500 ease-out group-hover:tracking-[0.2em] group-hover:text-yellow-200">
                 MENU

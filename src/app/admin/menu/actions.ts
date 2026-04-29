@@ -34,20 +34,22 @@ async function ensureMenuDocumentsBucketConfig() {
 
     if (listError) throw new Error(listError.message)
 
-    const bucketExists = buckets?.some(bucket => bucket.name === MENU_DOCUMENTS_BUCKET)
+    const bucket = buckets?.find(bucket => bucket.name === MENU_DOCUMENTS_BUCKET)
 
-    if (!bucketExists) {
+    if (!bucket) {
       const { error: createError } = await supabase.storage.createBucket(MENU_DOCUMENTS_BUCKET, {
         public: true,
         fileSizeLimit: '10MB',
-        allowedMimeTypes: ['application/pdf'],
       })
 
       if (createError && !createError.message.toLowerCase().includes('already exists')) {
         throw new Error(createError.message)
       }
     } else {
-      console.log('Menu documents bucket already exists, using existing configuration')
+      // Check if bucket is public
+      if (!bucket.public) {
+        throw new Error(`Bucket '${MENU_DOCUMENTS_BUCKET}' exists but is not public. Please make it public in Supabase dashboard or delete it to allow recreation.`)
+      }
     }
   } catch (error) {
     console.warn('Could not verify bucket configuration:', error)
@@ -76,7 +78,6 @@ async function uploadFileToMenuDocumentsStorage(file: File, menuItemId: string) 
     const { error: createBucketError } = await supabase.storage.createBucket(MENU_DOCUMENTS_BUCKET, {
       public: true,
       fileSizeLimit: '10MB',
-      allowedMimeTypes: ['application/pdf'],
     })
 
     if (createBucketError && !createBucketError.message.toLowerCase().includes('already exists')) {
@@ -96,6 +97,7 @@ async function uploadFileToMenuDocumentsStorage(file: File, menuItemId: string) 
     .from(MENU_DOCUMENTS_BUCKET)
     .getPublicUrl(filePath)
 
+  console.log('Uploaded file URL:', publicData.publicUrl)
   return publicData.publicUrl
 }
 

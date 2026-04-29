@@ -82,10 +82,26 @@ export function UnifiedDocumentManager({
 
       const updatedDocuments = [...value, ...newDocumentItems].slice(0, maxFiles)
       onChange(updatedDocuments)
+
+      // Save to database if onSave is provided
+      if (onSave) {
+        try {
+          await onSave(updatedDocuments)
+        } catch (error) {
+          console.error('Failed to save uploaded documents:', error)
+          alert(`Upload succeeded but failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          // Revert local state on error
+          onChange(value)
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
-  }, [value, maxFiles, menuItemId, onChange])
+  }, [value, maxFiles, menuItemId, onChange, onSave])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -132,6 +148,22 @@ export function UnifiedDocumentManager({
 
       const updatedDocuments = [...value, ...newDocumentItems].slice(0, maxFiles)
       onChange(updatedDocuments)
+
+      // Save to database if onSave is provided
+      if (onSave) {
+        try {
+          await onSave(updatedDocuments)
+        } catch (error) {
+          console.error('Failed to save uploaded documents:', error)
+          alert(`Upload succeeded but failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          // Revert local state on error
+          onChange(value)
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -147,6 +179,9 @@ export function UnifiedDocumentManager({
 
       const updatedDocuments = value.filter((_, i) => i !== index)
       onChange(updatedDocuments)
+    } catch (error) {
+      console.error('Delete failed:', error)
+      alert(`Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setDeletingIndex(null)
     }
@@ -173,6 +208,7 @@ export function UnifiedDocumentManager({
         await onSave(updatedDocuments)
       } catch (error) {
         console.error('Failed to save document title:', error)
+        alert(`Failed to save title: ${error instanceof Error ? error.message : 'Unknown error'}`)
         // Revert local state on error
         onChange(value)
         return
