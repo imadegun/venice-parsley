@@ -42,8 +42,8 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
         const data = await response.json()
         console.log('Fetched availability:', data)
 
-        const booked = new Set(data.bookedDates || [])
-        const pending = new Set(data.pendingDates || [])
+        const booked: Set<string> = new Set((data.bookedDates || []).map((date: unknown) => String(date)))
+        const pending: Set<string> = new Set((data.pendingDates || []).map((date: unknown) => String(date)))
 
         console.log('Final booked dates:', Array.from(booked))
         console.log('Final pending dates:', Array.from(pending))

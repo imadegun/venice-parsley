@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Download, FileText } from 'lucide-react'
 import { Container } from '@/components/layout/container'
 import { ScrollReveal } from '@/components/animations/scroll-reveal'
 import { createClient } from '@/lib/supabase'
@@ -8,17 +9,39 @@ import { useLanguage } from '@/components/language-provider'
 import { getLocalizedContent, getLocalizedTitle } from '@/lib/i18n-content'
 import ContactForm from '@/components/contact/contact-form'
 
+interface DocumentItem {
+  url: string
+  title: string
+}
+
 interface MenuPageContent {
   title: { en: string; it: string }
   content: { en: string; it: string }
   image_url?: string | null
   map_embed?: string | null
+  documents?: DocumentItem[] | null
+  downloads_enabled?: boolean | null
 }
 
 interface MenuDetailPageProps {
   href: string
   defaultTitle: string
   showMap?: boolean
+}
+
+// Helper function to extract file name from URL
+function getFileName(url: string): string {
+  try {
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname
+    const parts = pathname.split('/')
+    const fileName = parts[parts.length - 1]
+    // Remove UUID prefix and timestamp from filename
+    const cleanedName = fileName.split('-').slice(2).join('-')
+    return cleanedName || 'Document'
+  } catch {
+    return 'Document'
+  }
 }
 
 export default function MenuDetailPage({ href, defaultTitle, showMap = false }: MenuDetailPageProps) {
@@ -29,7 +52,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
   const loadContent = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
-    const { data: menuItem } = await supabase
+    const { data: menuItem, error } = await supabase
       .from('menu_items')
       .select('*')
       .eq('href', href)
@@ -195,6 +218,41 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
               <p className="text-gray-600 font-mulish text-sm sm:text-base md:text-lg max-w-md mx-auto">
                 {currentLang === 'it' ? 'Stiamo preparando contenuti interessanti per questa pagina.' : 'We\'re preparing interesting content for this page.'}
               </p>
+            </div>
+          </ScrollReveal>
+        )}
+
+        {/* Downloads Section */}
+        {content?.downloads_enabled && content?.documents && content.documents.length > 0 && (
+          <ScrollReveal direction="up" duration={1000} delay={500}>
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mt-8 md:mt-12">
+              <div className="p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6 font-bebas tracking-wide">
+                  {currentLang === 'it' ? 'DOCUMENTI SCARICABILI' : 'DOWNLOADABLE DOCUMENTS'}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {content.documents.map((document, index) => (
+                    <div key={index} className="flex flex-col p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <FileText className="h-6 w-6 text-red-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{document.title}</p>
+                          <p className="text-xs sm:text-sm text-gray-500">PDF Document</p>
+                        </div>
+                      </div>
+                      <a
+                        href={document.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      >
+                        <Download className="h-4 w-4" />
+                        {currentLang === 'it' ? 'Scarica' : 'Download'}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </ScrollReveal>
         )}

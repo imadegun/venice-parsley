@@ -25,10 +25,26 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const body = await request.json()
+    console.log('Menu API POST - Request received')
+    console.log('Content-Type:', request.headers.get('content-type'))
 
-    const { title, href, is_active = true, sort_order = 0, content, map_embed, image_url } = body
+    const supabase = createServerClient()
+
+    // Log the raw request body for debugging
+    const rawBody = await request.text()
+    console.log('Raw request body:', rawBody)
+
+    let body
+    try {
+      body = JSON.parse(rawBody)
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 })
+    }
+
+    console.log('Parsed body:', body)
+
+    const { title, href, is_active = true, sort_order = 0, content, map_embed, image_url, documents, downloads_enabled } = body
 
     if (!title || !href) {
       return NextResponse.json({ error: 'Title and href are required' }, { status: 400 })
@@ -36,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('menu_items')
-      .insert([{ title, href, is_active, sort_order, content, map_embed, image_url }])
+      .insert([{ title, href, is_active, sort_order, content, map_embed, image_url, documents, downloads_enabled }])
       .select()
       .single()
 
