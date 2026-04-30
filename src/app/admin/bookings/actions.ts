@@ -155,3 +155,22 @@ export async function deleteBooking(formData: FormData) {
 
   revalidatePath('/admin/bookings')
 }
+
+export async function processCheckInOut(bookingId: string, type: 'check-in' | 'check-out') {
+  'use server'
+  await requireRole(['admin', 'administrator'])
+  const supabase = createServerSupabaseClient()
+
+  const updateData = type === 'check-in'
+    ? { check_in_actual: new Date().toISOString(), updated_at: new Date().toISOString() }
+    : { check_out_actual: new Date().toISOString(), updated_at: new Date().toISOString() }
+
+  const { error } = await supabase
+    .from('bookings')
+    .update(updateData)
+    .eq('id', bookingId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/calendar')
+}
