@@ -1,22 +1,20 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { 
-  format, 
-  addMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameMonth, 
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import {
+  format,
+  addMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
   isSameDay,
   startOfDay,
-  isBefore,
   isAfter,
   isWithinInterval,
   addDays
 } from 'date-fns'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, MapPin, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase'
@@ -40,6 +38,14 @@ interface DayBookings {
   status: 'available' | 'booked' | 'occupied' | 'completed' | 'cancelled'
 }
 
+const statusConfig = {
+  available: { label: 'Available', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  booked: { label: 'Booked', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
+  occupied: { label: 'Occupied', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
+  completed: { label: 'Completed', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200', dot: 'bg-violet-500' },
+  cancelled: { label: 'Cancelled', bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500' },
+}
+
 export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [bookings, setBookings] = useState<BookingWithApartment[]>([])
@@ -47,8 +53,7 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedDateBookings, setSelectedDateBookings] = useState<BookingWithApartment[]>([])
 
-  // Fetch bookings for the apartment (or all bookings if no apartment specified)
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.warn('Supabase environment variables not set')
@@ -87,27 +92,23 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
     } finally {
       setLoading(false)
     }
-  }
+  }, [apartmentId])
 
   useEffect(() => {
     fetchBookings()
-  }, [apartmentId])
+  }, [fetchBookings])
 
-  // Get day status based on bookings
   const getDayStatus = (date: Date, dayBookings: BookingWithApartment[]): DayBookings['status'] => {
     if (dayBookings.length === 0) return 'available'
 
-    const today = startOfDay(new Date())
     const checkDate = startOfDay(date)
 
-    // Check if any booking is occupied (checked in but not checked out)
     const hasOccupied = dayBookings.some(booking => {
       if (booking.status !== 'confirmed') return false
       if (!booking.check_in_actual) return false
       const checkIn = startOfDay(new Date(booking.check_in_actual))
       const checkOut = booking.check_out_actual ? startOfDay(new Date(booking.check_out_actual)) : null
       
-      // Occupied if checked in but not checked out, and date is within range
       if (!checkOut) {
         return isSameDay(checkDate, checkIn) || isAfter(checkDate, checkIn)
       }
@@ -116,7 +117,6 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
 
     if (hasOccupied) return 'occupied'
 
-    // Check if any booking is completed (checked out)
     const hasCompleted = dayBookings.some(booking => {
       if (booking.status !== 'confirmed') return false
       if (!booking.check_out_actual) return false
@@ -126,18 +126,15 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
 
     if (hasCompleted) return 'completed'
 
-    // Check if any booking is cancelled
     const hasCancelled = dayBookings.some(booking => booking.status === 'cancelled')
     if (hasCancelled) return 'cancelled'
 
-    // Check if any booking is confirmed (booked)
     const hasBooked = dayBookings.some(booking => booking.status === 'confirmed')
     if (hasBooked) return 'booked'
 
     return 'available'
   }
 
-  // Get all days with their statuses
   const daysWithStatus = useMemo(() => {
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(currentMonth)
@@ -153,15 +150,10 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
 
       const status = getDayStatus(day, dayBookings)
 
-      return {
-        date: day,
-        bookings: dayBookings,
-        status
-      }
+      return { date: day, bookings: dayBookings, status }
     })
-  }, [currentMonth, bookings])
+  }, [currentMonth, bookings, getDayStatus])
 
-  // Calendar grid
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
@@ -188,162 +180,208 @@ export function BookingCalendar({ apartmentId, onDateSelect }: BookingCalendarPr
   const goToPrevMonth = () => setCurrentMonth(addMonths(currentMonth, -1))
   const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
 
-  const getStatusColor = (status: DayBookings['status']) => {
-    switch (status) {
-      case 'available':
-        return 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
-      case 'booked':
-        return 'bg-blue-100 text-blue-900 border-blue-200'
-      case 'occupied':
-        return 'bg-orange-100 text-orange-900 border-orange-200'
-      case 'completed':
-        return 'bg-green-100 text-green-900 border-green-200'
-      case 'cancelled':
-        return 'bg-red-100 text-red-900 border-red-200'
-      default:
-        return 'bg-white text-gray-900 border-gray-200'
-    }
-  }
+  const totalBookings = bookings.length
+  const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length
+  const pendingBookings = bookings.filter(b => b.status === 'pending').length
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-gray-500">Loading bookings...</p>
-        </CardContent>
-      </Card>
+      <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
+          <CalendarIcon className="h-8 w-8 text-blue-500 animate-pulse" />
+        </div>
+        <p className="text-gray-500 text-lg font-medium">Loading bookings...</p>
+      </div>
     )
   }
 
   return (
-      <Card>
-      <CardHeader className="border-b bg-muted/50">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <CalendarIcon className="h-5 w-5 text-blue-600" />
-          Booking Calendar
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded border bg-white border-gray-200"></div>
-            <span className="text-sm font-medium text-gray-700">Available</span>
+    <div className="w-full">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+              <CalendarIcon className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{totalBookings}</p>
+              <p className="text-xs text-gray-500">Total Bookings</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-blue-100 border border-blue-200"></div>
-            <span className="text-sm font-medium text-gray-700">Booked</span>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{confirmedBookings}</p>
+              <p className="text-xs text-gray-500">Confirmed</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-orange-100 border border-orange-200"></div>
-            <span className="text-sm font-medium text-gray-700">Occupied</span>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+              <Users className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{pendingBookings}</p>
+              <p className="text-xs text-gray-500">Pending</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-100 border border-green-200"></div>
-            <span className="text-sm font-medium text-gray-700">Completed</span>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center">
+              <MapPin className="h-5 w-5 text-violet-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{format(currentMonth, 'MMM')}</p>
+              <p className="text-xs text-gray-500">Current Month</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-red-100 border border-red-200"></div>
-            <span className="text-sm font-medium text-gray-700">Cancelled</span>
+        </div>
+      </div>
+
+      {/* Calendar Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                <CalendarIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Booking Calendar</h2>
+                <p className="text-xs text-gray-500">Manage and track all bookings</p>
+              </div>
+            </div>
+            
+            {/* Month Navigation */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={goToPrevMonth} className="h-10 w-10 rounded-xl hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600">
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <div className="min-w-[140px] text-center px-4 py-2 bg-gray-100 rounded-xl">
+                <p className="text-lg font-bold text-gray-900">{format(currentMonth, 'MMMM')}</p>
+                <p className="text-xs text-gray-500">{format(currentMonth, 'yyyy')}</p>
+              </div>
+              <Button variant="outline" size="icon" onClick={goToNextMonth} className="h-10 w-10 rounded-xl hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Month Navigation */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b">
-          <Button variant="outline" size="icon" onClick={goToPrevMonth} className="hover:bg-blue-50 hover:border-blue-200">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h3 className="text-xl font-bold text-gray-900">
-            {format(currentMonth, 'MMMM yyyy')}
-          </h3>
-          <Button variant="outline" size="icon" onClick={goToNextMonth} className="hover:bg-blue-50 hover:border-blue-200">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        {/* Legend */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <div key={key} className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${config.dot}`} />
+                <span className="text-xs font-medium text-gray-600">{config.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1">
-          {/* Day headers */}
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div
-              key={day}
-              className="h-10 flex items-center justify-center text-sm font-medium text-gray-500"
-            >
-              {day}
-            </div>
-          ))}
+        <div className="p-6">
+          <div className="grid grid-cols-7 gap-1.5">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="h-10 flex items-center justify-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                {day}
+              </div>
+            ))}
 
-          {/* Calendar days */}
-          {allDays.map((date, idx) => {
-            const isCurrentMonth = isSameMonth(date, currentMonth)
-            const dayData = daysWithStatus.find(d => isSameDay(d.date, date))
-            const status = dayData?.status || 'available'
-            const isSelected = selectedDate && isSameDay(date, selectedDate)
+            {allDays.map((date, idx) => {
+              const isCurrentMonth = isSameMonth(date, currentMonth)
+              const dayData = daysWithStatus.find(d => isSameDay(d.date, date))
+              const status = dayData?.status || 'available'
+              const isSelected = selectedDate && isSameDay(date, selectedDate)
+              const config = statusConfig[status]
 
-            return (
-              <button
-                key={idx}
-                onClick={() => isCurrentMonth && dayData && handleDateClick(dayData)}
-                disabled={!isCurrentMonth || !dayData}
-                className={`
-                  relative h-12 w-12 p-0 text-sm font-medium rounded-md border
-                  transition-all cursor-pointer
-                  ${!isCurrentMonth ? 'text-gray-300 bg-gray-50 cursor-default' : ''}
-                  ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-                  ${getStatusColor(status)}
-                `}
-                title={`${format(date, 'MMM d, yyyy')} - ${status}`}
-              >
-                <span className="relative z-10">{format(date, 'd')}</span>
-                {dayData && dayData.bookings.length > 0 && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current opacity-50"></span>
-                )}
-              </button>
-            )
-          })}
+              return (
+                <button
+                  key={idx}
+                  onClick={() => isCurrentMonth && dayData && handleDateClick(dayData)}
+                  disabled={!isCurrentMonth || !dayData}
+                  className={`
+                    relative h-14 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center
+                    ${!isCurrentMonth ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-default' : 'cursor-pointer'}
+                    ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 border-blue-400' : ''}
+                    ${isCurrentMonth ? `${config.bg} ${config.border} ${config.text} hover:shadow-md hover:scale-105` : ''}
+                  `}
+                  title={`${format(date, 'MMM d, yyyy')} - ${config.label}`}
+                >
+                  <span className="text-sm font-bold">{format(date, 'd')}</span>
+                  {dayData && dayData.bookings.length > 0 && (
+                    <span className={`absolute bottom-1.5 w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Selected Date Details */}
         {selectedDate && selectedDateBookings.length > 0 && (
-          <div className="mt-6 border-t pt-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">
-              Bookings for {format(selectedDate, 'MMMM d, yyyy')}
-            </h4>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {selectedDateBookings.map(booking => (
-                <div
-                  key={booking.id}
-                  className="p-3 bg-gray-50 rounded-lg text-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">
-                      {(booking as any).apartments?.name || 'Apartment'}
-                    </span>
-                    <Badge
-                      variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
-                    >
-                      {booking.status}
-                    </Badge>
-                  </div>
-                  <div className="text-gray-600 text-xs mt-1">
-                    {format(new Date(booking.check_in_date!), 'MMM d')} - {format(new Date(booking.check_out_date!), 'MMM d')}
-                  </div>
-                  {booking.check_in_actual && (
-                    <div className="text-green-600 text-xs mt-1">
-                      ✓ Checked in: {format(new Date(booking.check_in_actual), 'MMM d, h:mm a')}
+          <div className="border-t border-gray-200 bg-gray-50 p-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-blue-600" />
+              Bookings for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+            </h3>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {selectedDateBookings.map(booking => {
+                const aptName = (booking as any).apartments?.name
+                const displayName = typeof aptName === 'object' && aptName !== null 
+                  ? (aptName as any).en || (aptName as any).it || 'Apartment'
+                  : aptName || 'Apartment'
+
+                return (
+                  <div key={booking.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold text-gray-900">{displayName}</span>
+                          <Badge className={`${statusConfig[booking.status as keyof typeof statusConfig]?.bg} ${statusConfig[booking.status as keyof typeof statusConfig]?.text} border ${statusConfig[booking.status as keyof typeof statusConfig]?.border}`}>
+                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {booking.total_guests || 1} guest{(booking.total_guests || 1) !== 1 ? 's' : ''}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(booking.check_in_date!), 'MMM d')} - {format(new Date(booking.check_out_date!), 'MMM d')}
+                          </span>
+                        </div>
+                      </div>
+                      {booking.check_in_actual && (
+                        <div className="text-xs text-emerald-600 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          Checked in
+                        </div>
+                      )}
+                      {booking.check_out_actual && (
+                        <div className="text-xs text-violet-600 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-violet-500" />
+                          Checked out
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {booking.check_out_actual && (
-                    <div className="text-blue-600 text-xs mt-1">
-                      ✓ Checked out: {format(new Date(booking.check_out_actual), 'MMM d, h:mm a')}
-                    </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

@@ -12,7 +12,7 @@ export default async function AdminCalendarPage() {
 
   return (
     <Container spacing="xxl">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <ScrollReveal direction="up" duration={1000} delay={0}>
           <div className="mb-6 md:mb-8">
@@ -28,54 +28,38 @@ export default async function AdminCalendarPage() {
 
          {/* Main Content */}
          <ScrollReveal direction="up" duration={1000} delay={200}>
-           <Card className="shadow-lg border-0">
-             <CardContent className="p-4 sm:p-6 md:p-8">
-               <Tabs defaultValue="calendar" className="w-full">
-                 <TabsList className="w-full mb-6 h-14 bg-muted/50 rounded-lg p-1">
-                   <TabsTrigger 
-                     value="calendar" 
-                     className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 rounded-md transition-all"
-                   >
-                     <Calendar className="h-4 w-4 mr-2" />
-                     <span className="hidden sm:inline">Booking Calendar</span>
-                     <span className="sm:hidden">Calendar</span>
-                   </TabsTrigger>
-                   <TabsTrigger 
-                     value="check-in-out" 
-                     className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 rounded-md transition-all"
-                   >
-                     <Check className="h-4 w-4 mr-2" />
-                     <span className="hidden sm:inline">Check-In / Check-Out</span>
-                     <span className="sm:hidden">Check-In</span>
-                   </TabsTrigger>
-                 </TabsList>
+           <div className="w-full">
+             <Tabs defaultValue="calendar" className="w-full">
+               <TabsList className="w-full h-14 bg-muted/50 rounded-lg p-1">
+                 <TabsTrigger
+                   value="calendar"
+                   className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 rounded-md transition-all"
+                 >
+                   <Calendar className="h-4 w-4 mr-2" />
+                   <span className="hidden sm:inline">Booking Calendar</span>
+                   <span className="sm:hidden">Calendar</span>
+                 </TabsTrigger>
+                 <TabsTrigger
+                   value="check-in-out"
+                   className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 rounded-md transition-all"
+                 >
+                   <Check className="h-4 w-4 mr-2" />
+                   <span className="hidden sm:inline">Check-In / Check-Out</span>
+                   <span className="sm:hidden">Check-In</span>
+                 </TabsTrigger>
+               </TabsList>
 
-                 <TabsContent value="calendar" className="space-y-0">
-                   <Card className="border-0 shadow-sm">
-                     <CardContent className="p-4 sm:p-6">
-                       <div className="flex justify-center">
-                         <div className="w-full max-w-[1400px] mx-auto">
-                           <BookingCalendar />
-                         </div>
-                       </div>
-                     </CardContent>
-                   </Card>
-                 </TabsContent>
+               <TabsContent value="calendar" className="mt-6">
+                 <BookingCalendar />
+               </TabsContent>
 
-                 <TabsContent value="check-in-out" className="space-y-6">
-                   <Card className="border-0 shadow-sm">
-                     <CardContent className="p-4 sm:p-6">
-                       <div className="flex justify-center">
-                         <div className="w-full max-w-[1400px] mx-auto">
-                           <CheckInOutManager />
-                         </div>
-                       </div>
-                     </CardContent>
-                   </Card>
-                 </TabsContent>
-               </Tabs>
-             </CardContent>
-           </Card>
+               <TabsContent value="check-in-out" className="mt-6">
+                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                   <CheckInOutManager />
+                 </div>
+               </TabsContent>
+             </Tabs>
+           </div>
          </ScrollReveal>
       </div>
     </Container>

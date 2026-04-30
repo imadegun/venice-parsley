@@ -29,11 +29,11 @@ const adminNavItems = [
     href: '/admin/bookings',
     icon: Calendar
   },
-  // {
-  //   title: 'Calendar',
-  //   href: '/admin/calendar',
-  //   icon: Calendar
-  // },
+  {
+    title: 'Calendar',
+    href: '/admin/calendar',
+    icon: Calendar
+  },
   
   {
     title: 'Content',
