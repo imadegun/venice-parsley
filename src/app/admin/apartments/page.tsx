@@ -428,7 +428,7 @@ export default function AdminApartmentsPage() {
               <CardContent className="p-4 space-y-3">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{getApartmentName(item)}</h3>
-                  {typeof item.short_description === 'object' ? (
+                  {item.short_description && typeof item.short_description === 'object' ? (
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                       {item.short_description.en || item.short_description.it || ''}
                     </p>
