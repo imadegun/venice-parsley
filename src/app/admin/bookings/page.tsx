@@ -5,14 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-import { Calendar, Users, Euro, MapPin, Mail, Phone, Clock, CheckCircle, XCircle, AlertCircle, User } from 'lucide-react'
+import { Calendar, Users, Euro, MapPin, Mail, Phone, Clock, CheckCircle, XCircle, AlertCircle, User, LogIn, LogOut, Hotel } from 'lucide-react'
 import { format } from 'date-fns'
 
 const statusConfig = {
-  pending: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
-  confirmed: { color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
-  cancelled: { color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
-  completed: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
+  pending: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock, label: 'Pending' },
+  confirmed: { color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle, label: 'Confirmed' },
+  cancelled: { color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle, label: 'Cancelled' },
+  completed: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle, label: 'Completed' },
+}
+
+function getOccupancyStatus(booking: any) {
+  if (booking.status === 'cancelled') return { label: 'Cancelled', color: 'bg-red-50 text-red-700 border-red-200', icon: XCircle }
+  if (booking.status === 'completed') return { label: 'Checked Out', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: LogOut }
+  if (booking.check_in_actual && !booking.check_out_actual) return { label: 'Occupied', color: 'bg-orange-50 text-orange-700 border-orange-200', icon: Hotel }
+  if (booking.check_in_actual && booking.check_out_actual) return { label: 'Checked Out', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: LogOut }
+  if (booking.status === 'confirmed') {
+    const now = new Date()
+    const checkIn = booking.check_in_date ? new Date(booking.check_in_date) : null
+    if (checkIn && checkIn <= now) return { label: 'Arrived Today', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: LogIn }
+    return { label: 'Awaiting Check-in', color: 'bg-gray-50 text-gray-600 border-gray-200', icon: Clock }
+  }
+  return { label: 'Pending', color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: Clock }
 }
 
 export default async function AdminBookingsPage() {
@@ -44,6 +58,12 @@ export default async function AdminBookingsPage() {
     completed: bookings?.filter(b => b.status === 'completed').length || 0,
   }
 
+  const occupancyStats = {
+    occupied: bookings?.filter(b => b.check_in_actual && !b.check_out_actual && b.status === 'confirmed').length || 0,
+    checkedOut: bookings?.filter(b => b.check_out_actual).length || 0,
+    awaitingCheckIn: bookings?.filter(b => b.status === 'confirmed' && !b.check_in_actual).length || 0,
+  }
+
   const totalRevenue = bookings?.reduce((sum, booking) => {
     if (booking.status === 'confirmed' || booking.status === 'completed') {
       return sum + (booking.total_cents || 0)
@@ -60,7 +80,7 @@ export default async function AdminBookingsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -88,10 +108,10 @@ export default async function AdminBookingsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <LogIn className="h-5 w-5 text-emerald-600" />
               <div>
-                <p className="text-2xl font-bold">{stats.confirmed}</p>
-                <p className="text-xs text-gray-600">Confirmed</p>
+                <p className="text-2xl font-bold">{occupancyStats.awaitingCheckIn}</p>
+                <p className="text-xs text-gray-600">Awaiting Check-in</p>
               </div>
             </div>
           </CardContent>
@@ -100,22 +120,10 @@ export default async function AdminBookingsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-red-600" />
+              <Hotel className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-2xl font-bold">{stats.cancelled}</p>
-                <p className="text-xs text-gray-600">Cancelled</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{stats.completed}</p>
-                <p className="text-xs text-gray-600">Completed</p>
+                <p className="text-2xl font-bold">{occupancyStats.occupied}</p>
+                <p className="text-xs text-gray-600">Currently Occupied</p>
               </div>
             </div>
           </CardContent>
@@ -139,6 +147,8 @@ export default async function AdminBookingsPage() {
         {bookings?.map((booking) => {
           const StatusIcon = statusConfig[booking.status as keyof typeof statusConfig]?.icon || AlertCircle
           const statusStyle = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.pending
+          const occupancy = getOccupancyStatus(booking)
+          const OccupancyIcon = occupancy.icon
 
           const checkIn = booking.check_in_date ? new Date(booking.check_in_date) : null
           const checkOut = booking.check_out_date ? new Date(booking.check_out_date) : null
@@ -175,6 +185,11 @@ export default async function AdminBookingsPage() {
                     <Badge className={`${statusStyle.color} border`}>
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    </Badge>
+
+                    <Badge className={`${occupancy.color} border`}>
+                      <OccupancyIcon className="h-3 w-3 mr-1" />
+                      {occupancy.label}
                     </Badge>
 
                     <form action={updateBookingStatus} className="flex items-center gap-2">
@@ -261,6 +276,18 @@ export default async function AdminBookingsPage() {
                       <p>Created: {format(new Date(booking.created_at), 'MMM d, yyyy')}</p>
                       {booking.updated_at !== booking.created_at && (
                         <p>Updated: {format(new Date(booking.updated_at), 'MMM d, yyyy')}</p>
+                      )}
+                      {booking.check_in_actual && (
+                        <p className="flex items-center gap-1 text-emerald-600">
+                          <LogIn className="h-3 w-3" />
+                          Checked in: {format(new Date(booking.check_in_actual), 'MMM d, h:mm a')}
+                        </p>
+                      )}
+                      {booking.check_out_actual && (
+                        <p className="flex items-center gap-1 text-blue-600">
+                          <LogOut className="h-3 w-3" />
+                          Checked out: {format(new Date(booking.check_out_actual), 'MMM d, h:mm a')}
+                        </p>
                       )}
                       {booking.special_requests && (
                         <div className="mt-2">

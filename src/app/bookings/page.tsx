@@ -4,6 +4,9 @@ import { createServerAuthClient } from '@/lib/supabase-server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export default async function MyBookingsPage() {
   const authClient = await createServerAuthClient()
@@ -26,8 +29,37 @@ export default async function MyBookingsPage() {
     throw new Error(error.message)
   }
 
+  // Function to create Stripe checkout session
+  async function createCheckoutSession(bookingId: string, amount: number, apartmentName: string) {
+    'use server'
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Booking for ${apartmentName}`,
+            },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/booking/confirmation/${bookingId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
+      metadata: {
+        booking_id: bookingId,
+      },
+    })
+
+    redirect(session.url!)
+  }
+
   return (
-    <main className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <main className="max-w-4xl mx-auto px-4 py-16 space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-gray-900">My Bookings</h1>
         <p className="text-gray-600">Track your reservations and payment status.</p>
@@ -72,9 +104,18 @@ export default async function MyBookingsPage() {
                   <p>
                     Status: <strong className="uppercase">{booking.status}</strong>
                   </p>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={`/booking/confirmation/${booking.id}`}>View details</Link>
-                  </Button>
+                  <div className="flex gap-2">
+                    {booking.status === 'pending' && (
+                      <form action={createCheckoutSession.bind(null, booking.id, booking.total_cents, apartmentName)}>
+                        <Button type="submit" size="sm" variant="default">
+                          Pay Now
+                        </Button>
+                      </form>
+                    )}
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/booking/confirmation/${booking.id}`}>View details</Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )

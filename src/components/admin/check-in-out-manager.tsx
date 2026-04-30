@@ -1,327 +1,258 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
-import { createClient } from '@/lib/supabase'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useTransition } from 'react'
+import { format, parseISO, isSameDay } from 'date-fns'
+import { processCheckInOut } from '@/app/admin/bookings/actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, AlertCircle, Calendar, Users } from 'lucide-react'
+import {
+  Users,
+  LogIn,
+  LogOut,
+  Clock,
+  MapPin,
+  CheckCircle2
+} from 'lucide-react'
 import type { Database } from '@/types/database'
 
 type Booking = Database['public']['Tables']['bookings']['Row']
+type Apartment = Database['public']['Tables']['apartments']['Row']
+
+interface BookingWithApartment extends Booking {
+  apartments: Pick<Apartment, 'id' | 'name' | 'slug'> | null
+}
 
 interface CheckInOutManagerProps {
+  bookings: BookingWithApartment[]
+  apartments: Pick<Apartment, 'id' | 'name' | 'slug'>[]
   apartmentId?: string
   date?: Date
 }
 
-export function CheckInOutManager({ apartmentId, date }: CheckInOutManagerProps) {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [apartmentNames, setApartmentNames] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(true)
+export function CheckInOutManager({ bookings, apartments, apartmentId, date }: CheckInOutManagerProps) {
   const [processing, setProcessing] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  // Fetch bookings that can be checked in/out
-  useEffect(() => {
-    const fetchBookings = async () => {
+  const handleCheckInOut = (bookingId: string, type: 'check-in' | 'check-out') => {
+    setError(null)
+    setSuccess(null)
+    setProcessing(bookingId)
+
+    startTransition(async () => {
       try {
-        setLoading(true)
-        setError(null)
-
-        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-          throw new Error('Supabase environment variables not set')
-        }
-
-        const supabase = createClient()
-        const today = new Date().toISOString().split('T')[0]
-
-        let query = supabase
-          .from('bookings')
-          .select(`
-            *,
-            apartments:apartment_id (
-              name
-            )
-          `)
-          .eq('status', 'confirmed')
-          .order('check_in_date', { ascending: true })
-
-        if (apartmentId) {
-          query = query.eq('apartment_id', apartmentId)
-        }
-
-        if (date) {
-          const dateStr = format(date, 'yyyy-MM-dd')
-          query = query.lte('check_in_date', dateStr)
-            .gte('check_out_date', dateStr)
-        }
-
-        const { data, error } = await query
-
-        if (error) throw error
-
-        const bookingsData = data || []
-        setBookings(bookingsData)
-
-        // Extract apartment names
-        const names: Record<string, string> = {}
-        bookingsData.forEach((b: any) => {
-          if (b.apartments?.name) {
-            names[b.apartment_id!] = b.apartments.name
-          }
-        })
-        setApartmentNames(names)
-
+        await processCheckInOut(bookingId, type)
+        setSuccess(`${type === 'check-in' ? 'Check-in' : 'Check-out'} processed successfully`)
+        window.location.reload()
       } catch (err) {
-        console.error('Error fetching bookings:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch bookings')
+        setError(err instanceof Error ? err.message : `Failed to process ${type}`)
       } finally {
-        setLoading(false)
+        setProcessing(null)
       }
+    })
+  }
+
+  const getApartmentName = (apt: any): string => {
+    if (!apt?.name) return 'Unknown'
+    if (typeof apt.name === 'object') {
+      return apt.name.en || apt.name.it || 'Apartment'
     }
+    return apt.name
+  }
 
-    fetchBookings()
-  }, [apartmentId, date])
-
-  // Update booking with check-in/out timestamp
-  const updateCheckInOut = async (bookingId: string, type: 'check-in' | 'check-out') => {
-    try {
-      setProcessing(bookingId)
-      setError(null)
-
-      const supabase = createClient()
-      const now = new Date().toISOString()
-
-      const updateData = type === 'check-in' 
-        ? { check_in_actual: now }
-        : { check_out_actual: now }
-
-      const { error } = await supabase
-        .from('bookings')
-        .update(updateData)
-        .eq('id', bookingId)
-
-      if (error) throw error
-
-      // Update local state
-      setBookings(prev => prev.map(booking => 
-        booking.id === bookingId 
-          ? { ...booking, ...updateData }
-          : booking
-      ))
-
-    } catch (err) {
-      console.error(`Error during ${type}:`, err)
-      setError(err instanceof Error ? err.message : `Failed to process ${type}`)
-    } finally {
-      setProcessing(null)
+  const getGuestName = (booking: any): string => {
+    if (booking.contact_info && typeof booking.contact_info === 'object' && 'guest_name' in booking.contact_info) {
+      return (booking.contact_info as any).guest_name || 'N/A'
     }
+    return 'N/A'
   }
 
-  // Filter bookings by status
-  const getCheckInBookings = () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    return bookings.filter(booking => {
-      if (!booking.check_in_date) return false
-      const checkInDate = new Date(booking.check_in_date)
-      checkInDate.setHours(0, 0, 0, 0)
-      const checkOutDate = new Date(booking.check_out_date!)
-      checkOutDate.setHours(0, 0, 0, 0)
-      
-      // Can check in if: today is check-in date, not already checked in
-      return checkInDate.getTime() === today.getTime() && 
-             !booking.check_in_actual
-    })
-  }
+  const confirmedBookings = bookings.filter(b => b.status === 'confirmed')
 
-  const getCheckOutBookings = () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    return bookings.filter(booking => {
-      if (!booking.check_out_date) return false
-      const checkOutDate = new Date(booking.check_out_date)
-      checkOutDate.setHours(0, 0, 0, 0)
-      
-      // Can check out if: today is check-out date, checked in but not checked out
-      return checkOutDate.getTime() === today.getTime() && 
-             !!booking.check_in_actual && 
-             !booking.check_out_actual
-    })
-  }
+  const checkInBookings = confirmedBookings.filter(booking => {
+    if (!booking.check_in_date) return false
+    const targetDate = date || new Date()
+    const checkInDate = parseISO(booking.check_in_date)
+    return isSameDay(checkInDate, targetDate) && !booking.check_in_actual
+  })
 
-  const getActiveBookings = () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    return bookings.filter(booking => {
-      if (!booking.check_in_date || !booking.check_out_date) return false
-      const checkInDate = new Date(booking.check_in_date)
-      checkInDate.setHours(0, 0, 0, 0)
-      const checkOutDate = new Date(booking.check_out_date)
-      checkOutDate.setHours(0, 0, 0, 0)
-      
-      // Currently active if: checked in but not checked out
-      return booking.check_in_actual && 
-             !booking.check_out_actual &&
-             today >= checkInDate &&
-             today <= checkOutDate
-    })
-  }
+  const checkOutBookings = confirmedBookings.filter(booking => {
+    if (!booking.check_out_date) return false
+    const targetDate = date || new Date()
+    const checkOutDate = parseISO(booking.check_out_date)
+    return isSameDay(checkOutDate, targetDate) && booking.check_in_actual && !booking.check_out_actual
+  })
 
-  const checkInBookings = getCheckInBookings()
-  const checkOutBookings = getCheckOutBookings()
-  const activeBookings = getActiveBookings()
+  const activeBookings = confirmedBookings.filter(booking => {
+    if (!booking.check_in_date || !booking.check_out_date) return false
+    const today = date || new Date()
+    const checkInDate = parseISO(booking.check_in_date)
+    const checkOutDate = parseISO(booking.check_out_date)
+    return booking.check_in_actual && !booking.check_out_actual && today >= checkInDate && today <= checkOutDate
+  })
 
-  if (loading) {
+  const targetDate = date || new Date()
+
+  const renderBookingCard = (booking: any, actionType: 'check-in' | 'check-out' | null) => {
+    const nights = booking.check_in_date && booking.check_out_date
+      ? Math.ceil((parseISO(booking.check_out_date).getTime() - parseISO(booking.check_in_date).getTime()) / (1000 * 60 * 60 * 24))
+      : 0
+
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-gray-500">Loading bookings...</p>
-        </CardContent>
-      </Card>
+      <div key={booking.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                <MapPin className="h-5 w-5 text-gray-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-semibold text-gray-900 truncate">{getApartmentName(booking.apartments)}</h4>
+                  <Badge variant="outline" className="text-xs">
+                    {getGuestName(booking)}
+                  </Badge>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                    {booking.check_in_date ? format(parseISO(booking.check_in_date), 'MMM d') : 'TBD'}
+                    <span className="text-gray-400">→</span>
+                    {booking.check_out_date ? format(parseISO(booking.check_out_date), 'MMM d, yyyy') : 'TBD'}
+                  </span>
+                  {nights > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-gray-400" />
+                      {nights} night{nights !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {booking.total_guests && (
+                    <span className="flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5 text-gray-400" />
+                      {booking.total_guests} guest{booking.total_guests !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                {booking.check_in_actual && (
+                  <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Checked in: {format(parseISO(booking.check_in_actual), 'MMM d, h:mm a')}
+                  </p>
+                )}
+                {booking.check_out_actual && (
+                  <p className="text-xs text-violet-600 mt-1 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                    Checked out: {format(parseISO(booking.check_out_actual), 'MMM d, h:mm a')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {actionType && (
+            <div className="shrink-0">
+              <Button
+                onClick={() => handleCheckInOut(booking.id, actionType)}
+                disabled={processing === booking.id || isPending}
+                variant={actionType === 'check-in' ? 'default' : 'outline'}
+                className={`w-full sm:w-auto ${
+                  actionType === 'check-in' 
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {processing === booking.id ? (
+                  <>
+                    <Calendar className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : actionType === 'check-in' ? (
+                  <>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Check In
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Check Out
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const renderBookingList = (bookings: Booking[], title: string, icon: any, actionType: 'check-in' | 'check-out' | null) => (
-    <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        {icon}
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <Badge variant="secondary">{bookings.length}</Badge>
+  const renderSection = (title: string, icon: React.ReactNode, iconBg: string, items: any[], actionType: 'check-in' | 'check-out' | null, emptyMessage: string) => (
+    <div>
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}>
+          {icon}
+        </div>
+        <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+        <Badge variant="secondary" className="ml-auto text-xs">{items.length}</Badge>
       </div>
       
-      {bookings.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-          <p>No bookings to {actionType || 'display'} today</p>
+      {items.length === 0 ? (
+        <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-lg border border-gray-100 border-dashed">
+          <p className="text-sm">{emptyMessage}</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {bookings.map(booking => (
-            <Card key={booking.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium">
-                      {apartmentNames[booking.apartment_id!] || 'Apartment'}
-                    </h4>
-                    <Badge variant="outline">{booking.status}</Badge>
-                  </div>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>Guest: {booking.contact_info && typeof booking.contact_info === 'object' && 'guest_name' in booking.contact_info ? (booking.contact_info as any).guest_name : 'N/A'}</p>
-                    <p>Stay: {format(new Date(booking.check_in_date!), 'MMM d')} - {format(new Date(booking.check_out_date!), 'MMM d')}</p>
-                    {booking.total_guests && (
-                      <p className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {booking.total_guests} guest{booking.total_guests !== 1 ? 's' : ''}
-                      </p>
-                    )}
-                    {booking.check_in_actual && (
-                      <p className="text-green-600 text-xs">
-                        ✓ Checked in: {format(new Date(booking.check_in_actual), 'MMM d, h:mm a')}
-                      </p>
-                    )}
-                    {booking.check_out_actual && (
-                      <p className="text-blue-600 text-xs">
-                        ✓ Checked out: {format(new Date(booking.check_out_actual), 'MMM d, h:mm a')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                {actionType && (
-                  <Button
-                    onClick={() => updateCheckInOut(booking.id, actionType)}
-                    disabled={processing === booking.id}
-                    variant={actionType === 'check-in' ? 'default' : 'outline'}
-                  >
-                    {processing === booking.id ? (
-                      'Processing...'
-                    ) : actionType === 'check-in' ? (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Check In
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Check Out
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
+          {items.map(booking => renderBookingCard(booking, actionType))}
         </div>
       )}
     </div>
   )
 
   return (
-    <Card>
-      <CardHeader className="border-b bg-muted/50">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <Calendar className="h-5 w-5 text-blue-600" />
-          Check-In / Check-Out Management
-          {date && (
-            <span className="text-sm font-normal text-gray-500 ml-2">
-              {format(date, 'MMMM d, yyyy')}
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        {/* Today's Check-Ins */}
-        {renderBookingList(
-          checkInBookings,
-          'Today\'s Check-Ins',
-          <Check className="h-5 w-5 text-green-600" />,
-          'check-in'
-        )}
+    <div className="space-y-4">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">Check-In / Check-Out</h2>
+        <p className="text-sm text-gray-500">{format(targetDate, 'EEEE, MMMM d, yyyy')}</p>
+      </div>
 
-        {/* Today's Check-Outs */}
-        {renderBookingList(
-          checkOutBookings,
-          'Today\'s Check-Outs',
-          <Check className="h-5 w-5 text-blue-600" />,
-          'check-out'
-        )}
+      {/* Success Message */}
+      {success && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+          <p className="text-sm text-emerald-700">{success}</p>
+        </div>
+      )}
 
-        {/* Currently Occupied */}
-        {renderBookingList(
-          activeBookings,
-          'Currently Occupied',
-          <Users className="h-5 w-5 text-orange-600" />,
-          null
-        )}
+      {/* Check-Ins */}
+      {renderSection(
+        'Arrivals',
+        <LogIn className="h-4 w-4 text-emerald-600" />,
+        'bg-emerald-50',
+        checkInBookings,
+        'check-in',
+        'No arrivals scheduled for today'
+      )}
 
-        {checkInBookings.length === 0 && 
-         checkOutBookings.length === 0 && 
-         activeBookings.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="h-8 w-8 text-gray-400" />
-            </div>
-            <p className="text-gray-500 text-lg">No active bookings for the selected date</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Check-Outs */}
+      {renderSection(
+        'Departures',
+        <LogOut className="h-4 w-4 text-orange-600" />,
+        'bg-orange-50',
+        checkOutBookings,
+        'check-out',
+        'No departures scheduled for today'
+      )}
+
+      {/* Currently Occupied */}
+      {renderSection(
+        'Currently Occupied',
+        <Users className="h-4 w-4 text-blue-600" />,
+        'bg-blue-50',
+        activeBookings,
+        null,
+        'No rooms currently occupied'
+      )}
+    </div>
   )
 }

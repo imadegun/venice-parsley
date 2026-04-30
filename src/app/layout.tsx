@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Josefin_Sans, Montserrat, Bebas_Neue, Mulish, Yellowtail } from "next/font/google";
+import { Josefin_Sans, Montserrat, Bebas_Neue, Mulish, Yellowtail, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { RouteShell } from "@/components/layout/route-shell";
 import { LanguageProvider } from "@/components/language-provider";
@@ -42,6 +42,13 @@ const yellowtail = Yellowtail({
   display: "swap",
 });
 
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Venice Parsley - Luxury Artistic Apartments",
   description: "Discover unique artistic apartments in Venice. creative souls, and discerning travelers.",
@@ -53,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${josefinSans.variable} ${montserrat.variable} ${bebasNeue.variable} ${mulish.variable} ${yellowtail.variable}`}>
+    <html lang="en" className={`${josefinSans.variable} ${montserrat.variable} ${bebasNeue.variable} ${mulish.variable} ${yellowtail.variable} ${playfairDisplay.variable}`}>
       <body className={`${mulish.className} antialiased min-h-screen flex flex-col font-body`}>
         <I18nProvider>
           <LanguageProvider>

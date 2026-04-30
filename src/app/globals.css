@@ -16,6 +16,7 @@
   --font-bebas: var(--font-bebas);
   --font-mulish: var(--font-mulish);
   --font-yellowtail: var(--font-yellowtail);
+  --font-playfair: var(--font-playfair);
 
   /* Font Family Classes */
   --font-family-headline: var(--font-josefin), var(--font-montserrat), serif;
@@ -365,6 +366,12 @@
 
   .font-yellowtail {
     font-family: var(--font-yellowtail);
+  }
+
+  .font-playfair {
+    font-family: var(--font-playfair);
+    font-weight: 400;
+    text-transform: uppercase;
   }
 }
 
