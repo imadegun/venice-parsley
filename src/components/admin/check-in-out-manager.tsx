@@ -6,6 +6,7 @@ import { processCheckInOut } from '@/app/admin/bookings/actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
+  Calendar,
   Users,
   LogIn,
   LogOut,
