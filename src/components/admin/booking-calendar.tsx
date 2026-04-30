@@ -36,12 +36,12 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 type Apartment = Database['public']['Tables']['apartments']['Row']
 
 interface BookingWithApartment extends Booking {
-  apartments: Pick<Apartment, 'id' | 'name' | 'slug'> | null
+  apartments: Pick<Apartment, 'id' | 'name'> | null
 }
 
 interface BookingCalendarProps {
   bookings: BookingWithApartment[]
-  apartments: Pick<Apartment, 'id' | 'name' | 'slug'>[]
+  apartments: Pick<Apartment, 'id' | 'name'>[]
   apartmentId?: string
   onDateSelect?: (date: Date, bookings: BookingWithApartment[]) => void
 }
@@ -102,7 +102,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
     return booking.status
   }
 
-  const getApartmentName = (apt: Pick<Apartment, 'id' | 'name' | 'slug'> | null): string => {
+  const getApartmentName = (apt: Pick<Apartment, 'id' | 'name'> | null): string => {
     if (!apt?.name) return 'Unknown'
     if (typeof apt.name === 'object') {
       return (apt.name as any).en || (apt.name as any).it || 'Apartment'

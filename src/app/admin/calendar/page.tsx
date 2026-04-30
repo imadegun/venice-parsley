@@ -18,14 +18,13 @@ export default async function AdminCalendarPage() {
         *,
         apartments:apartment_id (
           id,
-          name,
-          slug
+          name
         )
       `)
       .order('check_in_date', { ascending: true }),
     supabase
       .from('apartments')
-      .select('id, name, slug')
+        .select('id, name')
       .order('name', { ascending: true }),
   ])
 
