@@ -123,7 +123,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
   }, [apartments, filteredBookings, searchQuery])
 
   const getBookingForDay = useCallback((apartmentId: string, date: Date) => {
-    return bookings.find(b => {
+    return filteredBookings.find(b => {
       if (b.apartment_id !== apartmentId) return false
       if (!b.check_in_date || !b.check_out_date) return false
       if (statusFilter !== 'all' && getBookingStatus(b) !== statusFilter) return false
@@ -132,7 +132,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
       if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) return false
       return date >= checkIn && date <= checkOut
     })
-  }, [bookings, statusFilter])
+  }, [filteredBookings, statusFilter])
 
   const getBookingSpan = useCallback((booking: BookingWithApartment): number => {
     if (!booking.check_in_date || !booking.check_out_date) return 1
@@ -147,25 +147,25 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     return {
-      total: bookings.length,
-      active: bookings.filter(b => {
+      total: filteredBookings.length,
+      active: filteredBookings.filter(b => {
         if (!b.check_in_date || !b.check_out_date) return false
         const checkIn = parseISO(b.check_in_date)
         const checkOut = parseISO(b.check_out_date)
         return today >= checkIn && today <= checkOut && b.status === 'confirmed'
       }).length,
-      checkingIn: bookings.filter(b => {
+      checkingIn: filteredBookings.filter(b => {
         if (!b.check_in_date) return false
         const checkIn = parseISO(b.check_in_date)
         return isSameDay(checkIn, today) && b.status === 'confirmed' && !b.check_in_actual
       }).length,
-      checkingOut: bookings.filter(b => {
+      checkingOut: filteredBookings.filter(b => {
         if (!b.check_out_date) return false
         const checkOut = parseISO(b.check_out_date)
         return isSameDay(checkOut, today) && b.status === 'confirmed' && b.check_in_actual && !b.check_out_actual
       }).length,
     }
-  }, [bookings])
+  }, [filteredBookings])
 
   return (
     <div className="space-y-4">
@@ -302,7 +302,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
             <div className={`h-10 border-b border-gray-200 bg-gray-50 px-3 flex items-center`}>
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Apartment</span>
             </div>
-            {filteredApartments.map(apt => (
+            {apartmentsWithBookings.map(apt => (
               <div
                 key={apt.id}
                 className="h-14 border-b border-gray-100 px-3 flex items-center hover:bg-gray-50 transition-colors"
@@ -313,7 +313,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
                 </div>
               </div>
             ))}
-            {filteredApartments.length === 0 && (
+            {apartmentsWithBookings.length === 0 && (
               <div className="h-24 flex items-center justify-center">
                 <p className="text-sm text-gray-500">No apartments found</p>
               </div>
@@ -352,7 +352,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
             </div>
 
             {/* Booking Rows */}
-            {filteredApartments.map(apt => (
+            {apartmentsWithBookings.map(apt => (
                 <div key={apt.id} className="flex border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                   {calendarDays.map((date, dayIdx) => {
                     const booking = getBookingForDay(apt.id, date)
@@ -396,7 +396,7 @@ export function BookingCalendar({ bookings, apartments, apartmentId, onDateSelec
                 </div>
             ))}
 
-            {filteredApartments.length === 0 && (
+            {apartmentsWithBookings.length === 0 && (
               <div className="flex items-center justify-center h-32">
                 <div className="text-center">
                   <CalendarIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />

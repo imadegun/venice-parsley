@@ -161,9 +161,10 @@ export async function processCheckInOut(bookingId: string, type: 'check-in' | 'c
   await requireRole(['admin', 'administrator'])
   const supabase = createServerSupabaseClient()
 
+  const now = new Date().toISOString()
   const updateData = type === 'check-in'
-    ? { check_in_actual: new Date().toISOString(), updated_at: new Date().toISOString() }
-    : { check_out_actual: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ? { check_in_actual: now, updated_at: now }
+    : { check_out_actual: now, status: 'completed' as const, updated_at: now }
 
   const { error } = await supabase
     .from('bookings')
@@ -173,4 +174,5 @@ export async function processCheckInOut(bookingId: string, type: 'check-in' | 'c
   if (error) throw new Error(error.message)
 
   revalidatePath('/admin/calendar')
+  revalidatePath('/admin/bookings')
 }
