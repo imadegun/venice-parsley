@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY!)
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
-  const sig = headers().get('stripe-signature')
+  const sig = (await headers()).get('stripe-signature')
 
   let event: Stripe.Event
 
