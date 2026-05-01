@@ -240,7 +240,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
             <div className="mt-8 md:mt-12 mb-8 md:mb-12">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                 <div className="p-4 sm:p-6 md:p-8">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
+                  <h2 className="text-[10px] sm:text-xs md:text-xs text-gray-900 mb-2 md:mb-3 font-playfair tracking-wide uppercase">
                     {currentLang === 'it' ? 'DOVE TROVARCI' : 'FIND US'}
                   </h2>
                   <div className="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-inner">
@@ -257,7 +257,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
           <ScrollReveal direction="up" duration={1000} delay={500}>
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mt-8 md:mt-12">
               <div className="p-4 sm:p-6 md:p-8">
-                <h2 className="text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
+                <h2 className="text-[10px] sm:text-xs md:text-xs text-gray-900 mb-2 md:mb-3 font-playfair tracking-wide uppercase">
                   {currentLang === 'it' ? 'DOCUMENTI SCARICABILI' : 'DOWNLOADABLE DOCUMENTS'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
