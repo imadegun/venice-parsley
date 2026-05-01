@@ -5,6 +5,7 @@ export default function HowToGetHerePage() {
     <MenuDetailPage
       href="/how-to-get-here"
       defaultTitle="How to Get Here"
+      showMap={true}
     />
   )
 }

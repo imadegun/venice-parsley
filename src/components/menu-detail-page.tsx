@@ -44,6 +44,39 @@ function getFileName(url: string): string {
   }
 }
 
+// Component to render map embed with proper styling
+function MapEmbedRenderer({ mapEmbed }: { mapEmbed: string }) {
+  // Try to extract src from iframe HTML
+  const extractSrc = (html: string): string | null => {
+    const match = html.match(/src=["']([^"']+)["']/)
+    return match ? match[1] : null
+  }
+
+  const src = extractSrc(mapEmbed)
+  
+  if (!src) {
+    // Fallback: render the raw HTML
+    return (
+      <div
+        className="w-full h-full"
+        dangerouslySetInnerHTML={{ __html: mapEmbed }}
+      />
+    )
+  }
+
+  return (
+    <iframe
+      src={src}
+      className="absolute inset-0 w-full h-full rounded-lg"
+      style={{ border: 0 }}
+      allowFullScreen
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      title="Google Maps Location"
+    />
+  )
+}
+
 export default function MenuDetailPage({ href, defaultTitle, showMap = false }: MenuDetailPageProps) {
   const { language } = useLanguage()
   const [content, setContent] = useState<MenuPageContent | null>(null)
@@ -148,30 +181,9 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
           </ScrollReveal>
         )}
 
-        {/* Map Section (for contact page) - Display AFTER form */}
-        {showMap && content?.map_embed && (
-          <ScrollReveal direction="up" duration={1000} delay={300}>
-            <div className="mb-8 md:mb-12">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                <div className="p-4 sm:p-6 md:p-8">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
-                    {currentLang === 'it' ? 'DOVE TROVARCI' : 'FIND US'}
-                  </h2>
-                  <div className="w-full h-64 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-inner">
-                    <div
-                      className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:rounded-lg"
-                      dangerouslySetInnerHTML={{ __html: content.map_embed }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
         {/* Content Section */}
         {pageContent ? (
-          <ScrollReveal direction="up" duration={1000} delay={400}>
+          <ScrollReveal direction="up" duration={1000} delay={300}>
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
               <div className="p-4 sm:p-6 md:p-8 lg:p-10">
                 {/* Content with improved typography */}
@@ -205,7 +217,7 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
             </div>
           </ScrollReveal>
         ) : (
-          <ScrollReveal direction="up" duration={1000} delay={400}>
+          <ScrollReveal direction="up" duration={1000} delay={300}>
             <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 md:p-12 text-center border border-gray-100">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                 <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,6 +230,24 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
               <p className="text-gray-600 font-mulish text-sm sm:text-base md:text-lg max-w-md mx-auto">
                 {currentLang === 'it' ? 'Stiamo preparando contenuti interessanti per questa pagina.' : 'We\'re preparing interesting content for this page.'}
               </p>
+            </div>
+          </ScrollReveal>
+        )}
+
+        {/* Map Section (for contact page) - Display AFTER content */}
+        {showMap && content?.map_embed && (
+          <ScrollReveal direction="up" duration={1000} delay={400}>
+            <div className="mt-8 md:mt-12 mb-8 md:mb-12">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div className="p-4 sm:p-6 md:p-8">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4 md:mb-6 font-playfair tracking-wide">
+                    {currentLang === 'it' ? 'DOVE TROVARCI' : 'FIND US'}
+                  </h2>
+                  <div className="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-inner">
+                    <MapEmbedRenderer mapEmbed={content.map_embed} />
+                  </div>
+                </div>
+              </div>
             </div>
           </ScrollReveal>
         )}
