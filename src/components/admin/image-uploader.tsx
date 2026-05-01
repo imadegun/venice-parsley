@@ -44,11 +44,35 @@ export function ImageUploader({ value = [], onChange, maxFiles = 10, accept = 'i
 
   const handleFiles = async (files: File[]) => {
     setUploading(true)
-    // TODO: Implement actual file upload to storage
-    // For now, create object URLs
-    const newUrls = files.map(file => URL.createObjectURL(file))
-    onChange([...value, ...newUrls].slice(0, maxFiles))
-    setUploading(false)
+    try {
+      const newUrls: string[] = []
+      for (const file of files) {
+        // Upload to Supabase storage
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error('Upload failed')
+        }
+
+        const result = await response.json()
+        newUrls.push(result.url)
+      }
+
+      onChange([...value, ...newUrls].slice(0, maxFiles))
+    } catch (error) {
+      console.error('Upload error:', error)
+      // For now, fall back to blob URLs if upload fails
+      const newUrls = files.map(file => URL.createObjectURL(file))
+      onChange([...value, ...newUrls].slice(0, maxFiles))
+    } finally {
+      setUploading(false)
+    }
   }
 
   const removeImage = (index: number) => {

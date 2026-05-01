@@ -105,10 +105,10 @@ export default function AdminApartmentsPage() {
     setMaxGuests(item.max_guests?.toString() || '')
     setBedrooms(item.bedrooms?.toString() || '')
     setSizeSqm(item.size_sqm?.toString() || '')
-    setShortDescEn(typeof item.short_description === 'object' ? item.short_description.en || '' : item.short_description || '')
-    setShortDescIt(typeof item.short_description === 'object' ? item.short_description.it || '' : '')
-    setDescriptionEn(typeof item.description === 'object' ? item.description.en || '' : item.description || '')
-    setDescriptionIt(typeof item.description === 'object' ? item.description.it || '' : '')
+    setShortDescEn(item.short_description && typeof item.short_description === 'object' ? item.short_description.en || '' : item.short_description || '')
+    setShortDescIt(item.short_description && typeof item.short_description === 'object' ? item.short_description.it || '' : '')
+    setDescriptionEn(typeof item.description === 'object' && item.description ? item.description.en || '' : item.description || '')
+    setDescriptionIt(typeof item.description === 'object' && item.description ? item.description.it || '' : '')
     setAmenities(item.amenities?.join(', ') || '')
     setStripePaymentLinkUrl(item.stripe_payment_link_url || '')
     setGalleryImages({
@@ -428,7 +428,7 @@ export default function AdminApartmentsPage() {
               <CardContent className="p-4 space-y-3">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{getApartmentName(item)}</h3>
-                  {typeof item.short_description === 'object' ? (
+                  {item.short_description && typeof item.short_description === 'object' ? (
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                       {item.short_description.en || item.short_description.it || ''}
                     </p>

@@ -6,6 +6,7 @@ import { processCheckInOut } from '@/app/admin/bookings/actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
+  Calendar,
   Users,
   LogIn,
   LogOut,
@@ -19,12 +20,12 @@ type Booking = Database['public']['Tables']['bookings']['Row']
 type Apartment = Database['public']['Tables']['apartments']['Row']
 
 interface BookingWithApartment extends Booking {
-  apartments: Pick<Apartment, 'id' | 'name' | 'slug'> | null
+  apartments: Pick<Apartment, 'id' | 'name'> | null
 }
 
 interface CheckInOutManagerProps {
   bookings: BookingWithApartment[]
-  apartments: Pick<Apartment, 'id' | 'name' | 'slug'>[]
+  apartments: Pick<Apartment, 'id' | 'name'>[]
   apartmentId?: string
   date?: Date
 }

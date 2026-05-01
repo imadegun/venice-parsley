@@ -185,7 +185,6 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
                     prose-p:text-gray-700 prose-p:leading-7 sm:prose-p:leading-8 prose-p:mb-4 prose-p:font-mulish prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
                     prose-strong:font-semibold prose-strong:text-gray-900
                     prose-em:italic prose-em:text-gray-600
-                    prose-a:text-blue-600 prose-a:hover:text-blue-800 prose-a:underline prose-a:font-medium prose-a:transition-colors prose-a:duration-200 prose-a:ease-in-out prose-a:hover:bg-blue-50 prose-a:px-1 prose-a:py-0.5 prose-a:rounded prose-a:hover:shadow-sm
                     prose-ul:mb-4 prose-ul:pl-5 prose-ul:space-y-2
                     prose-ol:mb-4 prose-ol:pl-5 prose-ol:space-y-2
                     prose-li:text-gray-700 prose-li:font-mulish prose-li:leading-7 prose-li:pl-2
@@ -199,8 +198,40 @@ export default function MenuDetailPage({ href, defaultTitle, showMap = false }: 
                     prose-pre:bg-gray-100 prose-pre:p-3 prose-pre:rounded prose-pre:overflow-x-auto prose-pre:mb-4 prose-pre:font-mono prose-pre:text-sm prose-pre:border
                     prose-figure:my-6
                     prose-figcaption:text-sm prose-figcaption:text-gray-600 prose-figcaption:text-center prose-figcaption:mt-2 prose-figcaption:font-mulish prose-figcaption:italic"
+                  style={{
+                    '--menu-link-color': '#111827',
+                    '--menu-link-hover-color': '#000000',
+                    '--menu-link-bg-hover': '#f3f4f6',
+                    '--menu-link-border-hover': '#d1d5db'
+                  } as React.CSSProperties}
                   dangerouslySetInnerHTML={{ __html: pageContent }}
                 />
+                <style>{`
+                  .menu-content a {
+                    color: var(--menu-link-color) !important;
+                    text-decoration: underline !important;
+                    font-weight: 500 !important;
+                    transition: all 200ms ease-in-out !important;
+                    padding: 0.25rem 0.5rem !important;
+                    border-radius: 0.5rem !important;
+                    border: 1px solid transparent !important;
+                    cursor: pointer !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    gap: 0.25rem !important;
+                  }
+                  .menu-content a:hover {
+                    color: var(--menu-link-hover-color) !important;
+                    background-color: var(--menu-link-bg-hover) !important;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+                    border-color: var(--menu-link-border-hover) !important;
+                  }
+                  .menu-content a:before {
+                    content: '🔗' !important;
+                    font-size: 0.75rem !important;
+                    opacity: 0.7 !important;
+                  }
+                `}</style>
               </div>
             </div>
           </ScrollReveal>

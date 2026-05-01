@@ -32,11 +32,12 @@ export default function HomeClient() {
 
       setHomepageContent(content)
 
-      // Fetch hero images
+      // Fetch hero images - limit to first 5 apartments for performance
       const { data: heroApartments } = await supabase
         .from('apartments')
         .select('gallery_images, image_url')
         .eq('is_active', true)
+        .limit(5)
 
       const images = Array.from(
         new Set(

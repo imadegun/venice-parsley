@@ -67,43 +67,53 @@ export function HeroSection({ heroContentData }: HeroSectionProps) {
     <section className="relative z-[1] mt-[10px] h-[min(80vh,700px)] aspect-[4/5] w-full overflow-hidden rounded-bl-[60px] rounded-br-[60px] md:mt-0 md:h-screen md:aspect-auto md:rounded-bl-[40px] md:rounded-br-[40px]">
       {/* Background Images */}
       <div className="absolute inset-0 overflow-hidden rounded-bl-[60px] rounded-br-[60px] md:rounded-bl-[40px] md:rounded-br-[40px]">
-        {heroContent.backgroundImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-[2600ms] ease-in-out ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <Image
-              src={image}
-              alt={`Hero background blur ${index + 1}`}
-              fill
-              className="object-cover blur-md scale-105 opacity-50"
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
-              sizes="100vw"
-              quality={100}
-              placeholder="empty"
-            />
-            <Image
-              src={image}
-              alt={`Hero background ${index + 1}`}
-              fill
-              className={`object-cover ${
-                index === currentImageIndex
-                  ? 'animate-[fullThenFloat_2600ms_ease-in-out] hero-cinematic-loop'
-                  : ''
+        {heroContent.backgroundImages.map((image, index) => {
+          const isCurrent = index === currentImageIndex
+          const isNext = index === (currentImageIndex + 1) % heroContent.backgroundImages.length
+          const isVisible = isCurrent || isNext
+
+          if (!isVisible && currentImageIndex > 0) return null
+
+          return (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-[2600ms] ease-in-out ${
+                isCurrent ? 'opacity-100' : 'opacity-0'
               }`}
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
-              sizes="100vw"
-              quality={100}
-              placeholder="empty"
-            />
-          </div>
-        ))}
+            >
+              <Image
+                src={image}
+                alt={`Hero background blur ${index + 1}`}
+                fill
+                className="object-cover blur-md scale-105 opacity-50"
+                priority={isCurrent}
+                loading={isCurrent ? 'eager' : 'lazy'}
+                fetchPriority={isCurrent ? 'high' : 'low'}
+                sizes="100vw"
+                quality={75}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+              />
+              <Image
+                src={image}
+                alt={`Hero background ${index + 1}`}
+                fill
+                className={`object-cover ${
+                  isCurrent
+                    ? 'animate-[fullThenFloat_2600ms_ease-in-out] hero-cinematic-loop'
+                    : ''
+                }`}
+                priority={isCurrent}
+                loading={isCurrent ? 'eager' : 'lazy'}
+                fetchPriority={isCurrent ? 'high' : 'low'}
+                sizes="100vw"
+                quality={75}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+              />
+            </div>
+          )
+        })}
       </div>
 
       {/* Overlay */}
