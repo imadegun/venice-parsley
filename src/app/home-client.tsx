@@ -190,7 +190,7 @@ export default function HomeClient() {
       <div className="mobile-bottom-cta fixed bottom-0 left-0 right-0 md:hidden px-3 pb-3">
         <Link
           href="/apartments"
-          className="flex h-14 w-full items-center justify-center rounded-t-[20px] bg-pink-500 text-white font-playfair text-sm tracking-[0.18em] shadow-[0_-6px_20px_rgba(0,0,0,0.2)]"
+          className="flex h-14 w-full items-center justify-center rounded-t-[20px] bg-[#1b211a] text-white font-playfair text-sm tracking-[0.18em] shadow-[0_-6px_20px_rgba(0,0,0,0.2)]"
         >
           BOOK NOW
         </Link>
