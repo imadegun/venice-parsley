@@ -99,7 +99,7 @@ export function Header() {
               hasScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
             }`}
           >
-            <span className="text-4xl text-white font-playfair tracking-wider">VENICE PARSLEY</span>
+            <span className="text-xl sm:text-2xl md:text-4xl text-white font-playfair tracking-wider">VENICE PARSLEY</span>
           </Link>
 
           <button
