@@ -81,7 +81,12 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
   const isDateBooked = (date: Date) => bookedDates.has(format(date, 'yyyy-MM-dd'))
   const isDatePending = (date: Date) => pendingDates.has(format(date, 'yyyy-MM-dd'))
   const isDateUnavailable = (date: Date) => bookedDates.has(format(date, 'yyyy-MM-dd')) || pendingDates.has(format(date, 'yyyy-MM-dd'))
-  const isDateDisabled = (date: Date) => isBefore(date, startOfDay(new Date())) || isDateUnavailable(date)
+  const isTooCloseForMinStay = (date: Date) => {
+    if (!checkIn) return false
+    const nightsDiff = Math.round((date.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+    return isAfter(date, checkIn) && nightsDiff < 2
+  }
+  const isDateDisabled = (date: Date) => isBefore(date, startOfDay(new Date())) || isDateUnavailable(date) || isTooCloseForMinStay(date)
 
   const handleDateClick = (date: Date) => {
     if (isDateDisabled(date)) return
@@ -93,13 +98,12 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
     }
 
     if (!checkIn) {
-      // First click: set check-in
       setCheckIn(date)
       setCheckOut(null)
     } else if (checkIn && !checkOut) {
-      // Second click: set check-out (must be after check-in)
+      const nightsDiff = Math.round((date.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+      if (nightsDiff < 2) return
       if (isAfter(date, checkIn)) {
-        // Check if any dates in the range are booked
         const rangeDates = eachDayOfInterval({ start: checkIn, end: date })
         const hasConflict = rangeDates.some(d => {
           const dStr = format(d, 'yyyy-MM-dd')
@@ -107,17 +111,14 @@ export function DateRangePicker({ apartment, onDateRangeSelect, refreshTrigger }
         })
 
         if (hasConflict) {
-          // Don't allow selection if there's a conflict in the range
           return
         } else {
           setCheckOut(date)
         }
       } else {
-        // If clicked before check-in, reset check-in to new date
         setCheckIn(date)
       }
     } else if (checkIn && checkOut) {
-      // Third click: reset and start new selection
       setCheckIn(date)
       setCheckOut(null)
     }

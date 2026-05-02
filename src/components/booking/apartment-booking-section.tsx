@@ -51,7 +51,7 @@ export function ApartmentBookingSection({ apartmentId }: ApartmentBookingSection
   const nights = useMemo(() => {
     if (!selection) return 0
     const ms = selection.checkOut.getTime() - selection.checkIn.getTime()
-    return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)))
+    return Math.round(ms / (1000 * 60 * 60 * 24))
   }, [selection])
 
   const totalPrice = useMemo(() => {
