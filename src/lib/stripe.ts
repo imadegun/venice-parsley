@@ -26,13 +26,13 @@ export const stripe = new Proxy({} as Stripe, {
 })
 
 export function formatAmount(amount: number): string {
-  return `$${(amount / 100).toFixed(2)}`
+  return `€${(amount / 100).toFixed(2)}`
 }
 
-export function centsToDollars(cents: number): number {
+export function centsToEuros(cents: number): number {
   return cents / 100
 }
 
-export function dollarsToCents(dollars: number): number {
-  return Math.round(dollars * 100)
+export function eurosToCents(euros: number): number {
+  return Math.round(euros * 100)
 }

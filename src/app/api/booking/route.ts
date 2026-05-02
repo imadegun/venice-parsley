@@ -66,7 +66,12 @@ export async function POST(request: Request) {
 
     const checkIn = new Date(payload.checkInDate)
     const checkOut = new Date(payload.checkOutDate)
-    const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)))
+    const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (nights < 2) {
+      return NextResponse.json({ error: 'Minimum stay is 2 nights' }, { status: 400 })
+    }
+
     const totalCents = nights * apartment.base_price_cents
 
     const { data: overlappingBookings, error: overlapError } = await supabase

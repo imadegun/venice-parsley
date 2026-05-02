@@ -18,7 +18,7 @@ interface AvailabilityCheckerProps {
 
 export function AvailabilityChecker({ apartmentId, onBookingSelect }: AvailabilityCheckerProps) {
   const [checkInDate, setCheckInDate] = useState<Date>(new Date())
-  const [checkOutDate, setCheckOutDate] = useState<Date>(addDays(new Date(), 1))
+  const [checkOutDate, setCheckOutDate] = useState<Date>(addDays(new Date(), 2))
   const [apartment, setApartment] = useState<Apartment | null>(null)
   const [loading, setLoading] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
@@ -178,7 +178,7 @@ export function AvailabilityChecker({ apartmentId, onBookingSelect }: Availabili
                 variant={isSameDay(date, checkOutDate) ? "default" : "outline"}
                 className="h-auto py-3 px-2 flex flex-col items-center"
                 onClick={() => setCheckOutDate(date)}
-                disabled={date <= checkInDate}
+                disabled={date <= addDays(checkInDate, 1)}
               >
                 <span className="text-sm font-medium">{format(date, 'd')}</span>
                 <span className="text-xs">{format(date, 'EEE')}</span>
