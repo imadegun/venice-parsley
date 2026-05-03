@@ -14,12 +14,29 @@ This guide provides comprehensive instructions for administrators managing the V
 
 ### First-Time Setup
 
-1. Register a user account through the frontend
-2. In Supabase dashboard, update user role:
+1. **Before deploying**, run the auto-admin trigger in Supabase SQL Editor:
    ```sql
-   UPDATE profiles SET role = 'administrator' WHERE id = 'user-uuid';
+   CREATE OR REPLACE FUNCTION public.handle_new_admin()
+   RETURNS TRIGGER AS $$
+   BEGIN
+     IF LOWER(NEW.email) = LOWER('your-admin-email@example.com') THEN
+       UPDATE public.profiles SET role = 'admin', updated_at = NOW() WHERE id = NEW.id;
+     END IF;
+     RETURN NEW;
+   END;
+   $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+   DROP TRIGGER IF EXISTS auto_admin_on_signup ON public.profiles;
+   CREATE TRIGGER auto_admin_on_signup AFTER INSERT ON public.profiles
+     FOR EACH ROW EXECUTE FUNCTION public.handle_new_admin();
    ```
-3. Log in and access `/admin`
+   Replace `your-admin-email@example.com` with your actual admin email.
+
+2. Register a user account through the frontend using that email — role is automatically set to `admin`
+
+3. Log in at `/admin-login` and access `/admin`
+
+> **Note**: The login URL is `/admin-login` (not `/admin/login`) to avoid redirect loop conflicts.
 
 **Screenshot Description**: Admin login page with email/password fields, styled consistently with the main application.
 
