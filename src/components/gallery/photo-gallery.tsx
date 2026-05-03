@@ -57,6 +57,7 @@ export function PhotoGallery({ images, alt, className = '' }: PhotoGalleryProps)
           fill
           className="object-cover rounded-lg"
           onClick={() => openLightbox(0)}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
           <ZoomIn className="w-8 h-8 text-white" />
@@ -86,6 +87,7 @@ export function PhotoGallery({ images, alt, className = '' }: PhotoGalleryProps)
           fill
           className="object-cover"
           onClick={() => openLightbox(0)}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
           <ZoomIn className="w-8 h-8 text-white" />
@@ -106,6 +108,7 @@ export function PhotoGallery({ images, alt, className = '' }: PhotoGalleryProps)
                 alt={`${alt} - View ${index + 2}`}
                 fill
                 className="object-cover hover:scale-105 transition-transform duration-300"
+                sizes="(max-width: 768px) 25vw, 25vw"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <ZoomIn className="w-4 h-4 text-white" />

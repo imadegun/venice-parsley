@@ -120,7 +120,7 @@ export default function ApartmentDetailPage() {
               <MapPin className="h-14 w-14 text-blue-400" />
             </div>
             {apartment.image_url && (
-              <Image src={apartment.image_url} alt={getLocalizedText(apartment.name)} fill className="object-cover" />
+              <Image src={apartment.image_url} alt={getLocalizedText(apartment.name)} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 700px" priority />
             )}
           </div>
         )}

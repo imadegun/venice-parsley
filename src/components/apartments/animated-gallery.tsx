@@ -63,6 +63,7 @@ export function AnimatedGallery({ images, title }: AnimatedGalleryProps) {
               fill
               className="object-cover blur-md scale-105 opacity-45"
               priority={index === 0}
+              sizes="100vw"
             />
             <Image
               src={image}
@@ -72,6 +73,7 @@ export function AnimatedGallery({ images, title }: AnimatedGalleryProps) {
                 index === activeIndex ? 'animate-[fullThenFloat_2600ms_ease-in-out] hero-cinematic-loop' : ''
               }`}
               priority={index === 0}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 800px"
             />
           </div>
         ))}
