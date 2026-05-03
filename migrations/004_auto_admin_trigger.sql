@@ -1,31 +1,37 @@
--- Auto-Admin Trigger
+-- Auto-Admin Trigger (AFTER INSERT version)
 -- Automatically grants 'admin' role to a specific email on first registration
+-- This fires AFTER INSERT so it works regardless of how the profile is created
 -- Replace 'your-admin-email@example.com' with the actual admin email before running
 
--- Step 1: Create the function
+-- Step 1: Create the function (case-insensitive comparison)
 CREATE OR REPLACE FUNCTION public.handle_new_admin()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Check if the new user's email matches the designated admin email
-  -- Update this email to your actual admin email before deploying
-  IF NEW.email = 'admin@veniceparsley.com.com' THEN
-    NEW.role := 'admin';
+  -- Case-insensitive email check
+  -- Replace with your actual admin email (lowercase)
+  IF LOWER(NEW.email) = LOWER('your-admin-email@example.com') THEN
+    UPDATE public.profiles 
+    SET role = 'admin', updated_at = NOW()
+    WHERE id = NEW.id;
   END IF;
   
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Step 2: Create the trigger on profiles table (fires BEFORE INSERT)
--- This ensures the role is set to 'admin' before the profile is saved
+-- Step 2: Recreate the trigger as AFTER INSERT
 DROP TRIGGER IF EXISTS auto_admin_on_signup ON public.profiles;
 
 CREATE TRIGGER auto_admin_on_signup
-  BEFORE INSERT ON public.profiles
+  AFTER INSERT ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_admin();
 
--- Step 3: Verify the trigger was created
+-- Step 3: Also update any existing user with the admin email
+-- Uncomment and run after deploying if needed:
+-- UPDATE profiles SET role = 'admin' WHERE LOWER(email) = LOWER('your-admin-email@example.com');
+
+-- Step 4: Verify the trigger
 SELECT tgname, tgrelid::regclass AS table_name, tgenabled 
 FROM pg_trigger 
 WHERE tgname = 'auto_admin_on_signup';

@@ -92,41 +92,26 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
 export async function createUserProfile(userId: string, fullName: string, role: UserRole = 'guest') {
   try {
-    // Use the server client with service role
     const supabase = createServerSupabaseClient()
 
     // Get user email from auth
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId)
+    const { data: userData } = await supabase.auth.admin.getUserById(userId)
     const email = userData?.user?.email || ''
 
-    // Try RPC function first (if it exists) - this bypasses RLS
-    const { error: rpcError } = await supabase.rpc('create_user_profile', {
-      user_id: userId,
-      user_email: email,
-      user_full_name: fullName,
-      user_role: role
-    })
+    // Direct insert - trigger on profiles table will handle admin role assignment
+    const { error } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        email: email,
+        full_name: fullName,
+        role: role
+      })
 
-    if (rpcError) {
-      console.log('RPC function not available or failed, trying direct insert...')
-      // Fallback to direct insert - this may fail due to RLS but won't break registration
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: email,
-          full_name: fullName,
-          role: role
-        })
-
-      if (insertError) {
-        console.error('Failed to create user profile via direct insert:', insertError)
-        // Profile creation failed, but registration can continue
-        // The user can still log in, and admin can create profile manually if needed
-      }
+    if (error && !error.message?.includes('duplicate')) {
+      console.error('Failed to create user profile:', error)
     }
   } catch (catchError) {
     console.error('Exception during profile creation:', catchError)
-    // Don't throw error - profile creation is not critical for registration
   }
 }
