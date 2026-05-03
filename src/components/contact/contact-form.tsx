@@ -195,7 +195,7 @@ export default function ContactForm({ language = 'en' }: ContactFormProps) {
     <Card className="border-gray-100 shadow-lg">
       <CardHeader className="pb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#454B44] to-[#2d362c] flex items-center justify-center">
             <Mail className="w-5 h-5 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">{t.title}</CardTitle>
@@ -316,7 +316,7 @@ export default function ContactForm({ language = 'en' }: ContactFormProps) {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-medium py-3"
+            className="w-full bg-linear-to-r from-[#454B44] to-[#2d362c] hover:text-yellow-300  text-white font-medium py-3"
           >
             {isSubmitting ? (
               <>
