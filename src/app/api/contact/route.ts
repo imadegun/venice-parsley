@@ -68,15 +68,16 @@ export async function POST(request: NextRequest) {
       </div>
     `
 
-    // Send email using Resend
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'veniceparsley@resend.dev'
-    
-    // console.log('Sending email from:', fromEmail)
-    // console.log('Sending email to:', 'production@gayaceramic.com')
+    // Email configuration from environment variables
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'info@veniceparsley.com'
+    const toEmail = process.env.RESEND_TO_EMAIL || 'toEmail'
+
+    console.log('Sending contact email from:', fromEmail)
+    console.log('Sending contact email to:', toEmail)
 
     const { data, error } = await getResend().emails.send({
       from: `Venice Parsley <${fromEmail}>`,
-      to: ['kakguna1@gmail.com'],
+      to: [toEmail],
       subject: emailSubject,
       html: emailBody,
       replyTo: email,

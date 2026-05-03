@@ -164,7 +164,7 @@ export default function HomeClient() {
 
       {/* CTA Section */}
       <ScrollReveal direction="up" duration={1000} delay={800}>
-        <section className="py-16 bg-gradient-to-b from-[#454B44] to-[#2d362c] text-white">
+        <section className="py-16 bg-linear-to-b from-[#454B44] to-[#2d362c] text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl mb-6 font-playfair">Ready for an Artistic Experience?</h2>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto font-mulish leading-8">
