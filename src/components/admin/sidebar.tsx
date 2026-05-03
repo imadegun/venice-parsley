@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { signOut } from '@/app/(auth)/login/actions'
 
 const adminNavItems = [
   {
@@ -57,8 +58,7 @@ export function AdminSidebar() {
   const pathname = usePathname()
 
   const handleLogout = async () => {
-    // TODO: Implement logout
-    window.location.href = '/'
+    await signOut()
   }
 
   return (

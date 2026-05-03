@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase'
+import { createUserProfile } from './actions'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -41,7 +42,7 @@ export default function RegisterPage() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -54,6 +55,11 @@ export default function RegisterPage() {
       if (error) {
         setError(error.message)
         return
+      }
+
+      // Create user profile if signup was successful (non-blocking)
+      if (data.user) {
+        await createUserProfile(data.user.id, fullName.trim())
       }
 
       // Redirect to login page with success message

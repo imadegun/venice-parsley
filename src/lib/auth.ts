@@ -91,18 +91,27 @@ export async function updateUserRole(userId: string, role: UserRole) {
 }
 
 export async function createUserProfile(userId: string, fullName: string, role: UserRole = 'guest') {
-  const supabase = createServerSupabaseClient()
+  try {
+    const supabase = createServerSupabaseClient()
 
-  const { error } = await supabase
-    .from('profiles')
-    .insert({
-      id: userId,
-      full_name: fullName,
-      role: role
-    })
+    // Get user email from auth
+    const { data: userData } = await supabase.auth.admin.getUserById(userId)
+    const email = userData?.user?.email || ''
 
-  if (error) {
-    console.error('Failed to create user profile:', error)
-    throw new Error('Failed to create user profile')
+    // Direct insert - trigger on profiles table will handle admin role assignment
+    const { error } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        email: email,
+        full_name: fullName,
+        role: role
+      })
+
+    if (error && !error.message?.includes('duplicate')) {
+      console.error('Failed to create user profile:', error)
+    }
+  } catch (catchError) {
+    console.error('Exception during profile creation:', catchError)
   }
 }
