@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home,
-  Calendar,
   Users,
   Settings,
   LogOut,
@@ -24,16 +23,6 @@ const adminNavItems = [
     title: 'Apartments',
     href: '/admin/apartments',
     icon: Home
-  },
-  {
-    title: 'Bookings',
-    href: '/admin/bookings',
-    icon: Calendar
-  },
-  {
-    title: 'Calendar',
-    href: '/admin/calendar',
-    icon: Calendar
   },
   
   {
