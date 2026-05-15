@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resendInstance: Resend | null = null
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      throw new Error('Missing Resend API key')
+    }
+    resendInstance = new Resend(apiKey)
+  }
+  return resendInstance
+}
 
 // Debug: log API key presence (not the full key for security)
 console.log('Resend API Key configured:', process.env.RESEND_API_KEY ? 'Yes (starts with: ' + process.env.RESEND_API_KEY.substring(0, 8) + '...)' : 'NO - Missing!')
@@ -64,7 +75,7 @@ export async function POST(request: NextRequest) {
     console.log('Sending contact email from:', fromEmail)
     console.log('Sending contact email to:', toEmail)
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: `Venice Parsley <${fromEmail}>`,
       to: [toEmail],
       subject: emailSubject,

@@ -14,13 +14,9 @@ export default async function AdminDashboard() {
   // Get dashboard stats
   const [
     { count: totalApartments },
-    { count: totalBookings },
-    { count: pendingBookings },
     { count: totalUsers }
   ] = await Promise.all([
     supabase.from('apartments').select('*', { count: 'exact', head: true }),
-    supabase.from('bookings').select('*', { count: 'exact', head: true }),
-    supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('user_profiles').select('*', { count: 'exact', head: true })
   ])
 
@@ -30,18 +26,6 @@ export default async function AdminDashboard() {
       value: totalApartments || 0,
       icon: Home,
       color: 'text-blue-600'
-    },
-    {
-      title: 'Total Bookings',
-      value: totalBookings || 0,
-      icon: Calendar,
-      color: 'text-green-600'
-    },
-    {
-      title: 'Pending Bookings',
-      value: pendingBookings || 0,
-      icon: Calendar,
-      color: 'text-orange-600'
     },
     {
       title: 'Total Users',

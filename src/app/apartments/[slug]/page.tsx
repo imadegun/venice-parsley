@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase'
 import { AnimatedGallery } from '@/components/apartments/animated-gallery'
 import { Container } from '@/components/layout/container'
-import { EmbeddedBookingFlow } from '@/components/booking/embedded-booking-flow'
+import { KrossBookingEmbed } from '@/components/booking/kross-booking-embed'
 import { useLanguage } from '@/components/language-provider'
 
 interface ApartmentDetail {
@@ -151,7 +151,7 @@ export default function ApartmentDetailPage() {
 
         <section className="space-y-4">
           <h2 className="text-2xl md:text-3xl text-gray-900 font-playfair">Book this apartment</h2>
-          <EmbeddedBookingFlow apartmentId={apartment.id} />
+          <KrossBookingEmbed />
         </section>
       </div>
     </Container>

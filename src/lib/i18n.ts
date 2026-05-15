@@ -28,7 +28,6 @@ const resources = {
         signIn: 'Sign In',
         signUp: 'Sign Up',
         account: 'Account',
-        myBookings: 'My Bookings',
         profile: 'Profile',
         signOut: 'Sign Out',
         browseTreatments: 'Browse Treatments'
@@ -56,18 +55,6 @@ const resources = {
         bathrooms: 'bathrooms',
         sqm: 'sqm'
       },
-      // Booking
-      booking: {
-        selectDates: 'Select Dates',
-        checkIn: 'Check-in',
-        checkOut: 'Check-out',
-        guests: 'Guests',
-        bookNow: 'Book Now',
-        confirmBooking: 'Confirm Booking',
-        bookingSummary: 'Booking Summary',
-        total: 'Total',
-        nights: 'nights'
-      },
       // Footer
       footer: {
         apartments: 'Apartments',
@@ -76,7 +63,6 @@ const resources = {
         support: 'Support',
         concierge: 'Concierge',
         support247: '24/7 Support',
-        bookingHelp: 'Booking Help',
         terms: 'Terms of Service',
         rights: 'All rights reserved'
       },
@@ -108,7 +94,6 @@ const resources = {
         signIn: 'Accedi',
         signUp: 'Registrati',
         account: 'Account',
-        myBookings: 'Le Mie Prenotazioni',
         profile: 'Profilo',
         signOut: 'Esci',
         browseTreatments: 'Sfoglia Trattamenti'
@@ -136,18 +121,6 @@ const resources = {
         bathrooms: 'bagni',
         sqm: 'mq'
       },
-      // Booking
-      booking: {
-        selectDates: 'Seleziona Date',
-        checkIn: 'Check-in',
-        checkOut: 'Check-out',
-        guests: 'Ospiti',
-        bookNow: 'Prenota Ora',
-        confirmBooking: 'Conferma Prenotazione',
-        bookingSummary: 'Riepilogo Prenotazione',
-        total: 'Totale',
-        nights: 'notti'
-      },
       // Footer
       footer: {
         apartments: 'Appartamenti',
@@ -156,7 +129,6 @@ const resources = {
         support: 'Supporto',
         concierge: 'Concierge',
         support247: 'Supporto 24/7',
-        bookingHelp: 'Aiuto Prenotazione',
         terms: 'Termini di Servizio',
         rights: 'Tutti i diritti riservati'
       },
