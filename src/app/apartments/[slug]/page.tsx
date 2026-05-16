@@ -1,6 +1,8 @@
 import ApartmentDetailClient from './apartment-detail-client'
 import { createClient } from '@/lib/supabase'
 
+const FALLBACK_SLUGS = ['ca-biri', 'ca-asia', 'ca-tera']
+
 export async function generateStaticParams() {
   try {
     const supabase = createClient()
@@ -9,10 +11,14 @@ export async function generateStaticParams() {
       .select('slug')
       .eq('is_active', true)
 
-    return (data || []).map((apartment) => ({ slug: apartment.slug }))
+    if (data && data.length > 0) {
+      return data.map((apartment) => ({ slug: apartment.slug }))
+    }
   } catch {
-    return []
+    console.warn('Could not fetch apartment slugs, using fallback')
   }
+
+  return FALLBACK_SLUGS.map((slug) => ({ slug }))
 }
 
 export default function ApartmentDetailPage() {

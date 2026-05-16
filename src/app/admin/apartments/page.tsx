@@ -15,13 +15,11 @@ interface Apartment {
   id: string
   name: string | { en: string; it: string }
   slug: string
-  category: string
   description: string | { en: string; it: string }
   short_description: string | { en: string; it: string } | null
   base_price_cents: number
   max_guests: number
   bedrooms: number
-  size_sqm: number
   amenities: string[]
   gallery_images: string[]
   image_url: string
@@ -82,11 +80,9 @@ export default function AdminApartmentsPage() {
 
   const [nameEn, setNameEn] = useState('')
   const [nameIt, setNameIt] = useState('')
-  const [category, setCategory] = useState('')
   const [basePriceCents, setBasePriceCents] = useState('')
   const [maxGuests, setMaxGuests] = useState('')
   const [bedrooms, setBedrooms] = useState('')
-  const [sizeSqm, setSizeSqm] = useState('')
   const [shortDescEn, setShortDescEn] = useState('')
   const [shortDescIt, setShortDescIt] = useState('')
   const [descriptionEn, setDescriptionEn] = useState('')
@@ -112,11 +108,9 @@ export default function AdminApartmentsPage() {
   function resetForm() {
     setNameEn('')
     setNameIt('')
-    setCategory('')
     setBasePriceCents('')
     setMaxGuests('')
     setBedrooms('')
-    setSizeSqm('')
     setShortDescEn('')
     setShortDescIt('')
     setDescriptionEn('')
@@ -135,11 +129,9 @@ export default function AdminApartmentsPage() {
     setEditingApartment(item)
     setNameEn(typeof item.name === 'object' ? item.name.en || '' : item.name || '')
     setNameIt(typeof item.name === 'object' ? item.name.it || '' : '')
-    setCategory(item.category || '')
     setBasePriceCents(item.base_price_cents?.toString() || '')
     setMaxGuests(item.max_guests?.toString() || '')
     setBedrooms(item.bedrooms?.toString() || '')
-    setSizeSqm(item.size_sqm?.toString() || '')
     setShortDescEn(item.short_description && typeof item.short_description === 'object' ? item.short_description.en || '' : item.short_description || '')
     setShortDescIt(item.short_description && typeof item.short_description === 'object' ? item.short_description.it || '' : '')
     setDescriptionEn(typeof item.description === 'object' && item.description ? item.description.en || '' : item.description || '')
@@ -171,11 +163,9 @@ export default function AdminApartmentsPage() {
       const values = {
         name: nameObj,
         slug,
-        category,
         base_price_cents: parseInt(basePriceCents) || 0,
         max_guests: parseInt(maxGuests) || 1,
         bedrooms: parseInt(bedrooms) || 0,
-        size_sqm: parseFloat(sizeSqm) || 0,
         short_description: shortDescObj,
         description: descObj,
         amenities: amenitiesArr,
@@ -320,10 +310,6 @@ export default function AdminApartmentsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="category">Category</Label>
-                      <Input id="category" value={category} onChange={e => setCategory(e.target.value)} className="mt-1" placeholder="e.g., luxury, standard" />
-                    </div>
-                    <div>
                       <Label htmlFor="basePriceCents">Base Price (cents)</Label>
                       <Input id="basePriceCents" type="number" value={basePriceCents} onChange={e => setBasePriceCents(e.target.value)} className="mt-1" required />
                       {basePriceCents && (
@@ -337,10 +323,6 @@ export default function AdminApartmentsPage() {
                     <div>
                       <Label htmlFor="bedrooms">Bedrooms</Label>
                       <Input id="bedrooms" type="number" value={bedrooms} onChange={e => setBedrooms(e.target.value)} className="mt-1" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="sizeSqm">Size (sqm)</Label>
-                      <Input id="sizeSqm" type="number" step="0.1" value={sizeSqm} onChange={e => setSizeSqm(e.target.value)} className="mt-1" />
                     </div>
                     <div>
                       <Label htmlFor="amenities">Amenities (comma separated)</Label>
@@ -461,11 +443,6 @@ export default function AdminApartmentsPage() {
                     <ImageIcon className="h-12 w-12 text-gray-300" />
                   </div>
                 )}
-                {item.category && (
-                  <span className="absolute top-3 left-3 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded">
-                    {item.category}
-                  </span>
-                )}
               </div>
 
               <CardContent className="p-4 space-y-3">
@@ -485,10 +462,6 @@ export default function AdminApartmentsPage() {
                   <span>{item.max_guests} guests</span>
                   <span>{item.bedrooms} bed{item.bedrooms !== 1 ? 's' : ''}</span>
                 </div>
-
-                {item.size_sqm && (
-                  <p className="text-xs text-gray-500">{item.size_sqm} m²</p>
-                )}
 
                 <div className="flex items-center gap-2 pt-2 border-t">
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(item)}>
