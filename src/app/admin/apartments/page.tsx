@@ -26,7 +26,7 @@ interface Apartment {
   amenities: string[]
   gallery_images: string[]
   image_url: string
-  stripe_payment_link_url?: string
+
 }
 
 interface ImageState {
@@ -55,7 +55,6 @@ export default function AdminApartmentsPage() {
   const [descriptionEn, setDescriptionEn] = useState('')
   const [descriptionIt, setDescriptionIt] = useState('')
   const [amenities, setAmenities] = useState('')
-  const [stripePaymentLinkUrl, setStripePaymentLinkUrl] = useState('')
   const [galleryImages, setGalleryImages] = useState<ImageState>({ images: [], mainImageIndex: 0 })
 
   useEffect(() => {
@@ -86,7 +85,6 @@ export default function AdminApartmentsPage() {
     setDescriptionEn('')
     setDescriptionIt('')
     setAmenities('')
-    setStripePaymentLinkUrl('')
     setGalleryImages({ images: [], mainImageIndex: 0 })
     setEditingApartment(null)
   }
@@ -110,7 +108,6 @@ export default function AdminApartmentsPage() {
     setDescriptionEn(typeof item.description === 'object' && item.description ? item.description.en || '' : item.description || '')
     setDescriptionIt(typeof item.description === 'object' && item.description ? item.description.it || '' : '')
     setAmenities(item.amenities?.join(', ') || '')
-    setStripePaymentLinkUrl(item.stripe_payment_link_url || '')
     setGalleryImages({
       images: item.gallery_images || [],
       mainImageIndex: Math.max(0, item.gallery_images?.findIndex(img => img === item.image_url) ?? 0)
@@ -146,7 +143,6 @@ export default function AdminApartmentsPage() {
         amenities: amenitiesArr,
         gallery_images: galleryImages.images,
         image_url: galleryImages.images[galleryImages.mainImageIndex] || '',
-        stripe_payment_link_url: stripePaymentLinkUrl,
       }
 
       if (editingApartment) {
@@ -293,11 +289,6 @@ export default function AdminApartmentsPage() {
                       <Label htmlFor="amenities">Amenities (comma separated)</Label>
                       <Input id="amenities" value={amenities} onChange={e => setAmenities(e.target.value)} className="mt-1" placeholder="WiFi, AC, Kitchen" />
                     </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="stripeUrl">Stripe Payment Link URL</Label>
-                    <Input id="stripeUrl" value={stripePaymentLinkUrl} onChange={e => setStripePaymentLinkUrl(e.target.value)} className="mt-1" placeholder="https://buy.stripe.com/..." />
                   </div>
                 </CardContent>
               </Card>

@@ -25,7 +25,6 @@ const apartmentSchema = z.object({
   max_guests: z.coerce.number().int().positive(),
   bedrooms: z.coerce.number().int().nonnegative(),
   amenities: z.string().optional().default(''),
-  stripe_payment_link_url: z.string().optional().default(''),
   unified_images: z.object({
     images: z.array(z.string()),
     mainImageIndex: z.number().int().min(0)
@@ -233,7 +232,6 @@ export async function createApartment(data: FormData | Record<string, unknown>) 
       max_guests: data.get('max_guests'),
       bedrooms: data.get('bedrooms'),
       amenities: data.get('amenities')?.toString(),
-      stripe_payment_link_url: data.get('stripe_payment_link_url')?.toString(),
       unified_images: parseUnifiedImages(data.get('unified_images')),
       is_active: parseIsActive(data.get('is_active')),
     }
@@ -248,7 +246,6 @@ export async function createApartment(data: FormData | Record<string, unknown>) 
       max_guests: raw.max_guests,
       bedrooms: raw.bedrooms,
       amenities: raw.amenities,
-      stripe_payment_link_url: raw.stripe_payment_link_url || '',
       unified_images: raw.unified_images || { images: [], mainImageIndex: 0 },
       is_active: raw.is_active ?? true,
     }
@@ -272,7 +269,6 @@ export async function createApartment(data: FormData | Record<string, unknown>) 
     max_guests: payload.max_guests,
     bedrooms: payload.bedrooms,
     amenities: toStringArray(payload.amenities),
-    stripe_payment_link_url: payload.stripe_payment_link_url || null,
     gallery_images: storageImages,
     image_url: storageImages[payload.unified_images.mainImageIndex] || null,
     is_active: payload.is_active,
@@ -331,7 +327,6 @@ export async function updateApartment(data: FormData | Record<string, unknown>) 
       max_guests: data.get('max_guests'),
       bedrooms: data.get('bedrooms'),
       amenities: data.get('amenities')?.toString(),
-      stripe_payment_link_url: data.get('stripe_payment_link_url')?.toString(),
       unified_images: parseUnifiedImages(data.get('unified_images')),
       is_active: parseIsActive(data.get('is_active')),
     }
@@ -347,7 +342,6 @@ export async function updateApartment(data: FormData | Record<string, unknown>) 
       max_guests: raw.max_guests,
       bedrooms: raw.bedrooms,
       amenities: raw.amenities,
-      stripe_payment_link_url: raw.stripe_payment_link_url || '',
       unified_images: raw.unified_images || { images: [], mainImageIndex: 0 },
       is_active: raw.is_active ?? true,
     }
@@ -393,7 +387,6 @@ export async function updateApartment(data: FormData | Record<string, unknown>) 
       max_guests: payload.max_guests,
       bedrooms: payload.bedrooms,
       amenities: toStringArray(payload.amenities),
-      stripe_payment_link_url: payload.stripe_payment_link_url || null,
       gallery_images: storageImages,
       image_url: storageImages[payload.unified_images.mainImageIndex] || null,
       is_active: payload.is_active,
