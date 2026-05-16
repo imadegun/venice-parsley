@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Send, CheckCircle, AlertCircle, Loader2, Mail, User, Phone, MessageSquare } from 'lucide-react'
 import { useLanguage } from '@/components/language-provider'
-import { createClient } from '@/lib/supabase'
 
 interface ContactFormProps {
   language?: 'en' | 'it'
@@ -131,14 +130,27 @@ export default function ContactForm({ language = 'en' }: ContactFormProps) {
     setErrorMessage('')
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/contact-email`
-      const response = await fetch(edgeFunctionUrl, {
+      // Use PHP endpoint on Aruba hosting, fallback to Supabase Edge Function for local dev
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      
+      let endpoint: string
+      if (isLocalhost) {
+        // Local dev: try Supabase Edge Function
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        endpoint = `${supabaseUrl}/functions/v1/contact-email`
+      } else {
+        // Production on Aruba: use PHP mail
+        endpoint = '/contact.php'
+      }
+
+      console.log('Sending contact form to:', endpoint)
+      console.log('Form data:', { name: formData.name, email: formData.email })
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
           ...formData,
@@ -147,13 +159,14 @@ export default function ContactForm({ language = 'en' }: ContactFormProps) {
       })
 
       const data = await response.json()
+      console.log('Contact form response:', response.status, data)
 
       if (response.ok) {
         setSubmitStatus('success')
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
       } else {
         setSubmitStatus('error')
-        setErrorMessage(data.error || t.error)
+        setErrorMessage(data.details || data.error || t.error)
       }
     } catch (error) {
       setSubmitStatus('error')

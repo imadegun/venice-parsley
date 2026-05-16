@@ -397,6 +397,7 @@ export default function AdminApartmentsPage() {
                     value={galleryImages}
                     slug={`apartment-${editingApartment?.id || 'new'}`}
                     onChange={setGalleryImages}
+                    maxFiles={15}
                   />
                 </CardContent>
               </Card>

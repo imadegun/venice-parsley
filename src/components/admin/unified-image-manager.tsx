@@ -26,6 +26,8 @@ async function uploadFileToStorage(file: File, slug: string) {
   const extension = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
   const filePath = `apartments/${slug}/${crypto.randomUUID()}-${Date.now()}.${extension}`
 
+  console.log('Supabase storage upload:', { bucket: APARTMENT_IMAGES_BUCKET, path: filePath })
+
   const { error: uploadError } = await supabase.storage
     .from(APARTMENT_IMAGES_BUCKET)
     .upload(filePath, file, {
@@ -34,7 +36,10 @@ async function uploadFileToStorage(file: File, slug: string) {
       contentType: file.type || 'image/jpeg',
     })
 
-  if (uploadError) throw new Error(uploadError.message)
+  if (uploadError) {
+    console.error('Supabase storage upload error:', uploadError)
+    throw new Error(uploadError.message)
+  }
 
   const { data: publicData } = supabase.storage
     .from(APARTMENT_IMAGES_BUCKET)
@@ -71,7 +76,7 @@ export function UnifiedImageManager({
   value = { images: [], mainImageIndex: 0 },
   onChange,
   slug,
-  maxFiles = 10,
+  maxFiles = 15,
   accept = 'image/*'
 }: UnifiedImageManagerProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -112,8 +117,7 @@ export function UnifiedImageManager({
   const handleFiles = async (files: File[]) => {
     if (files.length === 0) return
 
-    // Validate file sizes
-    const maxSizeBytes = 50 * 1024 * 1024 // 50MB
+    const maxSizeBytes = 50 * 1024 * 1024
     const oversizedFiles = files.filter(file => file.size > maxSizeBytes)
 
     if (oversizedFiles.length > 0) {
@@ -121,8 +125,7 @@ export function UnifiedImageManager({
       return
     }
 
-    // Warn about large files
-    const largeFiles = files.filter(file => file.size > 2 * 1024 * 1024) // 2MB
+    const largeFiles = files.filter(file => file.size > 2 * 1024 * 1024)
     if (largeFiles.length > 0) {
       const proceed = confirm(`Some files are larger than 2MB (${largeFiles.map(f => `${f.name}: ${(f.size / 1024 / 1024).toFixed(1)}MB`).join(', ')}). This may affect page load speed. Continue?`)
       if (!proceed) return
@@ -132,11 +135,18 @@ export function UnifiedImageManager({
     try {
       const remainingSlots = Math.max(0, maxFiles - images.length)
       const filesToUpload = files.slice(0, remainingSlots)
-      if (filesToUpload.length === 0) return
+      if (filesToUpload.length === 0) {
+        alert(`Maximum ${maxFiles} images reached. Delete some images first to add more.`)
+        return
+      }
+
+      console.log('Starting upload for', filesToUpload.length, 'files, slug:', slug || 'apartment')
 
       const uploadedUrls: string[] = []
       for (const file of filesToUpload) {
+        console.log('Uploading file:', file.name, 'size:', file.size)
         const uploadedUrl = await uploadFileToStorage(file, (slug || 'apartment').trim())
+        console.log('Uploaded successfully:', uploadedUrl)
         uploadedUrls.push(uploadedUrl)
       }
 
@@ -146,6 +156,11 @@ export function UnifiedImageManager({
         images: updatedImages,
         mainImageIndex: images.length === 0 ? 0 : Math.min(mainImageIndex, updatedImages.length - 1)
       })
+
+      console.log('Upload complete. Total images:', updatedImages.length)
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setUploading(false)
     }
@@ -244,8 +259,9 @@ export function UnifiedImageManager({
             className="hidden"
           />
           <Button
+            type="button"
             variant="secondary"
-            onClick={(e) => { e.preventDefault(); fileInputRef.current?.click() }}
+            onClick={() => { fileInputRef.current?.click() }}
             disabled={uploading || images.length >= maxFiles}
           >
             {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
@@ -329,8 +345,9 @@ export function UnifiedImageManager({
             <Card className="border-dashed border-2 hover:border-blue-400 transition-colors aspect-square">
               <div className="w-full h-full flex items-center justify-center">
                   <Button
+                    type="button"
                     variant="ghost"
-                    onClick={(e) => { e.preventDefault(); fileInputRef.current?.click() }}
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className="flex flex-col items-center gap-2 text-gray-500 hover:text-gray-700"
                   >

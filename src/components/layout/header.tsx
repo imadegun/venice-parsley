@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Calendar, Menu, X } from 'lucide-react'
 import { useLanguage } from '@/components/language-provider'
 import { LanguageSwitcher } from '@/components/ui/lang-switcher'
+import { createClient } from '@/lib/supabase'
 
 interface MenuItem {
   id: string
@@ -44,32 +45,47 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const defaultMenuItems: MenuItem[] = [
+    { id: '1', href: '/about', title: { en: 'About', it: 'Chi siamo' }, is_active: true, sort_order: 1 },
+    { id: '2', href: '/apartments', title: { en: 'Apartments', it: 'Appartamenti' }, is_active: true, sort_order: 2 },
+    { id: '3', href: '/neighbourhood', title: { en: 'Neighbourhood', it: 'Quartiere' }, is_active: true, sort_order: 3 },
+    { id: '4', href: '/how-to-get-here', title: { en: 'How to get here', it: 'Come arrivare' }, is_active: true, sort_order: 4 },
+    { id: '5', href: '/contact', title: { en: 'Contact', it: 'Contatti' }, is_active: true, sort_order: 5 },
+    { id: '6', href: '/venice-tips-and-suggestions', title: { en: 'Venice tips', it: 'Consigli Venezia' }, is_active: true, sort_order: 6 },
+  ]
+
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch('/api/admin/menu')
-      if (response.ok) {
-        const data = await response.json()
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+
+      if (error) {
+        console.warn('Menu fetch error, using defaults:', error.message)
+        setMenuItems(defaultMenuItems)
+      } else if (data && data.length > 0) {
         setMenuItems(data)
+      } else {
+        setMenuItems(defaultMenuItems)
       }
     } catch (error) {
       console.error('Error fetching menu items:', error)
-      // Fallback to default menu items
-      setMenuItems([
-        { id: '1', href: '/about', title: { en: 'About' }, is_active: true, sort_order: 1 },
-        { id: '2', href: '/apartments', title: { en: 'Apartments' }, is_active: true, sort_order: 2 },
-        { id: '3', href: '/neighbourhood', title: { en: 'Neighbourhood' }, is_active: true, sort_order: 3 },
-        { id: '4', href: '/how-to-get-here', title: { en: 'How to get here' }, is_active: true, sort_order: 4 },
-        { id: '5', href: '/contact', title: { en: 'Contact with map' }, is_active: true, sort_order: 5 },
-        { id: '6', href: '/venice-tips-and-suggestions', title: { en: 'Venice tips and suggestions ' }, is_active: true, sort_order: 6 },
-      ])
+      setMenuItems(defaultMenuItems)
     }
   }
 
   const fetchThemeSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings')
-      if (response.ok) {
-        const data = await response.json()
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .single()
+
+      if (!error && data) {
         setThemeSettings(data)
       }
     } catch (error) {
