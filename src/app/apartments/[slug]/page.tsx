@@ -151,7 +151,7 @@ export default function ApartmentDetailPage() {
 
         <section className="space-y-4">
           <h2 className="text-2xl md:text-3xl text-gray-900 font-playfair">Book this apartment</h2>
-          <KrossBookingEmbed />
+          <KrossBookingEmbed language={currentLang} />
         </section>
       </div>
     </Container>
