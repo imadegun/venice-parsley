@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Send, CheckCircle, AlertCircle, Loader2, Mail, User, Phone, MessageSquare } from 'lucide-react'
 import { useLanguage } from '@/components/language-provider'
+import { createClient } from '@/lib/supabase'
 
 interface ContactFormProps {
   language?: 'en' | 'it'
@@ -130,9 +131,15 @@ export default function ContactForm({ language = 'en' }: ContactFormProps) {
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/contact', {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/contact-email`
+      const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
         body: JSON.stringify({
           ...formData,
           language: lang

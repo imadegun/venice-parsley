@@ -6,7 +6,58 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { deleteMenuDocuments, uploadMenuDocuments } from '@/app/admin/menu/actions'
+import { createClient } from '@/lib/supabase'
+
+const MENU_DOCUMENTS_BUCKET = 'menu-documents'
+
+function getStoragePathFromPublicUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    const marker = `/object/public/${MENU_DOCUMENTS_BUCKET}/`
+    const index = parsed.pathname.indexOf(marker)
+    if (index === -1) return null
+    return decodeURIComponent(parsed.pathname.slice(index + marker.length))
+  } catch {
+    return null
+  }
+}
+
+async function uploadFileToStorage(file: File, menuItemId: string) {
+  const supabase = createClient()
+  const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+  const extension = file.name.split('.').pop() || 'pdf'
+  const sanitizedFileName = nameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const filePath = `menu-items/${menuItemId}/${crypto.randomUUID()}-${Date.now()}-${sanitizedFileName}.${extension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(MENU_DOCUMENTS_BUCKET)
+    .upload(filePath, file, {
+      upsert: false,
+      cacheControl: '31536000',
+      contentType: file.type || 'application/pdf',
+    })
+
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data: publicData } = supabase.storage
+    .from(MENU_DOCUMENTS_BUCKET)
+    .getPublicUrl(filePath)
+
+  return publicData.publicUrl
+}
+
+async function deleteStorageDocuments(urls: string[]) {
+  const supabase = createClient()
+  const paths = urls
+    .map(getStoragePathFromPublicUrl)
+    .filter((value): value is string => Boolean(value))
+
+  if (paths.length === 0) return
+
+  const { error } = await supabase.storage.from(MENU_DOCUMENTS_BUCKET).remove(paths)
+  if (error?.message?.toLowerCase().includes('bucket not found')) return
+  if (error) throw new Error(error.message)
+}
 
 interface DocumentItem {
   url: string
@@ -68,14 +119,14 @@ export function UnifiedDocumentManager({
       const filesToUpload = files.slice(0, remainingSlots)
       if (filesToUpload.length === 0) return
 
-      const formData = new FormData()
-      formData.append('menuItemId', menuItemId)
-      filesToUpload.forEach(file => formData.append('files', file))
-
-      const { urls } = await uploadMenuDocuments(formData)
+      const uploadedUrls: string[] = []
+      for (const file of filesToUpload) {
+        const uploadedUrl = await uploadFileToStorage(file, menuItemId)
+        uploadedUrls.push(uploadedUrl)
+      }
 
       // Create document items with default titles based on filenames
-      const newDocumentItems = urls.map(url => ({
+      const newDocumentItems = uploadedUrls.map(url => ({
         url,
         title: getFileName(url)
       }))
@@ -134,14 +185,14 @@ export function UnifiedDocumentManager({
       const filesToUpload = files.slice(0, remainingSlots)
       if (filesToUpload.length === 0) return
 
-      const formData = new FormData()
-      formData.append('menuItemId', menuItemId)
-      filesToUpload.forEach(file => formData.append('files', file))
-
-      const { urls } = await uploadMenuDocuments(formData)
+      const uploadedUrls: string[] = []
+      for (const file of filesToUpload) {
+        const uploadedUrl = await uploadFileToStorage(file, menuItemId)
+        uploadedUrls.push(uploadedUrl)
+      }
 
       // Create document items with default titles based on filenames
-      const newDocumentItems = urls.map(url => ({
+      const newDocumentItems = uploadedUrls.map(url => ({
         url,
         title: getFileName(url)
       }))
@@ -175,7 +226,7 @@ export function UnifiedDocumentManager({
 
     setDeletingIndex(index)
     try {
-      await deleteMenuDocuments([documentToDelete.url])
+      await deleteStorageDocuments([documentToDelete.url])
 
       const updatedDocuments = value.filter((_, i) => i !== index)
       onChange(updatedDocuments)

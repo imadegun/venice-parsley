@@ -5,7 +5,56 @@ import { Upload, X, GripVertical, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { deleteApartmentImages, uploadApartmentImages } from '@/app/admin/apartments/actions'
+import { createClient } from '@/lib/supabase'
+
+const APARTMENT_IMAGES_BUCKET = 'apartment-images'
+
+function getStoragePathFromPublicUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    const marker = `/object/public/${APARTMENT_IMAGES_BUCKET}/`
+    const index = parsed.pathname.indexOf(marker)
+    if (index === -1) return null
+    return decodeURIComponent(parsed.pathname.slice(index + marker.length))
+  } catch {
+    return null
+  }
+}
+
+async function uploadFileToStorage(file: File, slug: string) {
+  const supabase = createClient()
+  const extension = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
+  const filePath = `apartments/${slug}/${crypto.randomUUID()}-${Date.now()}.${extension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(APARTMENT_IMAGES_BUCKET)
+    .upload(filePath, file, {
+      upsert: false,
+      cacheControl: '31536000',
+      contentType: file.type || 'image/jpeg',
+    })
+
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data: publicData } = supabase.storage
+    .from(APARTMENT_IMAGES_BUCKET)
+    .getPublicUrl(filePath)
+
+  return publicData.publicUrl
+}
+
+async function deleteStorageImages(urls: string[]) {
+  const supabase = createClient()
+  const paths = urls
+    .map(getStoragePathFromPublicUrl)
+    .filter((value): value is string => Boolean(value))
+
+  if (paths.length === 0) return
+
+  const { error } = await supabase.storage.from(APARTMENT_IMAGES_BUCKET).remove(paths)
+  if (error?.message?.toLowerCase().includes('bucket not found')) return
+  if (error) throw new Error(error.message)
+}
 
 interface UnifiedImageManagerProps {
   value: {
@@ -87,11 +136,8 @@ export function UnifiedImageManager({
 
       const uploadedUrls: string[] = []
       for (const file of filesToUpload) {
-        const formData = new FormData()
-        formData.append('slug', (slug || 'apartment').trim())
-        formData.append('files', file)
-        const { urls } = await uploadApartmentImages(formData)
-        uploadedUrls.push(...urls)
+        const uploadedUrl = await uploadFileToStorage(file, (slug || 'apartment').trim())
+        uploadedUrls.push(uploadedUrl)
       }
 
       const updatedImages = [...images, ...uploadedUrls].slice(0, maxFiles)
@@ -111,7 +157,7 @@ export function UnifiedImageManager({
 
     setDeletingIndex(index)
     try {
-      await deleteApartmentImages([imageToDelete])
+      await deleteStorageImages([imageToDelete])
 
       const updatedImages = images.filter((_, i) => i !== index)
       let newMainIndex = mainImageIndex

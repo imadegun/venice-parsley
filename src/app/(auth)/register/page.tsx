@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase'
-import { createUserProfile } from './actions'
+import { createUserProfile } from '@/lib/auth'
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -21,7 +22,6 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,12 +57,10 @@ export default function RegisterPage() {
         return
       }
 
-      // Create user profile if signup was successful (non-blocking)
       if (data.user) {
-        await createUserProfile(data.user.id, fullName.trim())
+        await createUserProfile(data.user.id, fullName.trim(), 'guest')
       }
 
-      // Redirect to login page with success message
       router.push('/login?message=Registration successful! Please check your email to verify your account.')
     } catch {
       setError('An unexpected error occurred. Please try again.')

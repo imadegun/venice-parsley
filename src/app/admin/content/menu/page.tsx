@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,15 +17,14 @@ interface MenuItem {
   sort_order: number
 }
 
-// Convert text to URL-friendly slug
 const slugify = (text: string): string => {
   return text
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')           // Replace spaces with hyphens
-    .replace(/[^a-z0-9-]/g, '')     // Remove all non-alphanumeric except hyphens
-    .replace(/-+/g, '-')            // Replace multiple hyphens with single
-    .replace(/^-+|-+$/g, '')        // Trim hyphens from start/end
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 export default function MenuManagement() {
@@ -39,16 +39,22 @@ export default function MenuManagement() {
     is_active: true,
     sort_order: 0
   })
-  const [hrefTouched, setHrefTouched] = useState(false) // Track if user manually edited href
+  const [hrefTouched, setHrefTouched] = useState(false)
+
   useEffect(() => {
     fetchMenuItems()
   }, [])
 
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch('/api/admin/menu')
-      if (response.ok) {
-        const data = await response.json()
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+
+      if (!error && data) {
         setMenuItems(data)
       }
     } catch (error) {
@@ -62,32 +68,33 @@ export default function MenuManagement() {
     e.preventDefault()
 
     try {
-      const url = editingItem ? `/api/admin/menu/${editingItem.id}` : '/api/admin/menu'
-      const method = editingItem ? 'PUT' : 'POST'
-
+      const supabase = createClient()
       const payload = {
-        title: {
-          en: formData.title_en,
-          it: formData.title_it
-        },
+        title: { en: formData.title_en, it: formData.title_it },
         href: formData.href,
         is_active: formData.is_active,
         sort_order: formData.sort_order
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      if (response.ok) {
-        await fetchMenuItems()
-        setDialogOpen(false)
-        resetForm()
+      if (editingItem) {
+        const { error } = await supabase
+          .from('menu_items')
+          .update(payload)
+          .eq('id', editingItem.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('menu_items')
+          .insert([payload])
+        if (error) throw error
       }
+
+      await fetchMenuItems()
+      setDialogOpen(false)
+      resetForm()
     } catch (error) {
       console.error('Error saving menu item:', error)
+      alert('Failed to save menu item: ' + (error instanceof Error ? error.message : String(error)))
     }
   }
 
@@ -95,15 +102,13 @@ export default function MenuManagement() {
     if (!confirm('Are you sure you want to delete this menu item?')) return
 
     try {
-      const response = await fetch(`/api/admin/menu/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        await fetchMenuItems()
-      }
+      const supabase = createClient()
+      const { error } = await supabase.from('menu_items').delete().eq('id', id)
+      if (error) throw error
+      await fetchMenuItems()
     } catch (error) {
       console.error('Error deleting menu item:', error)
+      alert('Failed to delete menu item')
     }
   }
 
@@ -122,7 +127,7 @@ export default function MenuManagement() {
       is_active: item.is_active,
       sort_order: item.sort_order
     })
-    setHrefTouched(true) // Existing href is considered manually set
+    setHrefTouched(true)
     setDialogOpen(true)
   }
 
@@ -144,10 +149,7 @@ export default function MenuManagement() {
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open)
-            if (!open) {
-              // Reset form state when dialog closes (cancel or submit)
-              resetForm()
-            }
+            if (!open) resetForm()
           }}
         >
           <DialogTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4">
@@ -182,9 +184,7 @@ export default function MenuManagement() {
                         <Input
                           id="title_it"
                           value={formData.title_it}
-                          onChange={(e) => {
-                            setFormData({ ...formData, title_it: e.target.value })
-                          }}
+                          onChange={(e) => setFormData({ ...formData, title_it: e.target.value })}
                         />
                       </div>
                       <div className="space-y-2">

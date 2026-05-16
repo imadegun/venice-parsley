@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   Home,
   Users,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { signOut } from '@/app/(auth)/login/actions'
+import { createClient } from '@/lib/supabase'
 
 const adminNavItems = [
   {
@@ -45,9 +45,12 @@ const adminNavItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
 
   const handleLogout = async () => {
-    await signOut()
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
   }
 
   return (

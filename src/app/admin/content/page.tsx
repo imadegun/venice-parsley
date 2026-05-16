@@ -1,11 +1,40 @@
-import { requireRole } from '@/lib/auth'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getUser, getUserRole } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Home, Menu, File } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function ContentManagement() {
-  await requireRole(['admin', 'administrator'])
+export default function ContentManagement() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function checkAuth() {
+      const user = await getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const role = await getUserRole(user.id)
+      if (!['admin', 'administrator'].includes(role)) {
+        router.push('/')
+        return
+      }
+
+      setLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (loading) {
+    return <div className="p-8">Loading content management...</div>
+  }
 
   const contentSections = [
     {
@@ -14,30 +43,6 @@ export default async function ContentManagement() {
       href: '/admin/content/home',
       icon: Home
     },
-    // DISABLED: Gallery feature not ready yet
-    /*
-    {
-      title: 'Gallery Management',
-      description: 'Upload and organize apartment photos and images',
-      href: '/admin/gallery',
-      icon: Image
-    },
-    */
-    // DISABLED: About & Contact managed via Menu section
-    /*
-    {
-      title: 'About Page',
-      description: 'Edit company information and mission statement',
-      href: '/admin/content/about',
-      icon: FileText
-    },
-    {
-      title: 'Contact Information',
-      description: 'Update contact details and business information',
-      href: '/admin/content/contact',
-      icon: Phone
-    },
-    */
     {
       title: 'Menu Management',
       description: 'Add, edit, and organize navigation menu items',
@@ -85,7 +90,6 @@ export default async function ContentManagement() {
         })}
       </div>
 
-      {/* Content Status */}
       <Card>
         <CardHeader>
           <CardTitle>Content Status</CardTitle>

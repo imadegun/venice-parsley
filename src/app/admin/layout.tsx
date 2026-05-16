@@ -1,16 +1,44 @@
-import { redirect } from 'next/navigation'
-import { requireRole } from '@/lib/auth'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getUser, getUserRole } from '@/lib/auth'
 import { AdminSidebar } from '@/components/admin/sidebar'
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  try {
-    await requireRole(['admin', 'administrator'])
-  } catch {
-    redirect('/login')
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function checkAuth() {
+      const user = await getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const role = await getUserRole(user.id)
+      if (!['admin', 'administrator'].includes(role)) {
+        router.push('/')
+        return
+      }
+
+      setLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading admin panel...</p>
+      </div>
+    )
   }
 
   return (

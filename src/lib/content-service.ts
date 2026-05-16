@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import {
   contentKeySchema,
   contentPayloadSchemaByKey,
@@ -12,7 +12,7 @@ export async function getContentSectionForAdmin(key: string): Promise<ContentSec
   const parsed = contentKeySchema.safeParse(key)
   if (!parsed.success) return null
 
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('content_sections')
     .select('*')
@@ -24,7 +24,7 @@ export async function getContentSectionForAdmin(key: string): Promise<ContentSec
 }
 
 export async function getPublishedContentSection(key: ContentKey): Promise<ContentSectionRow | null> {
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('content_sections')
     .select('*')
@@ -52,7 +52,7 @@ export async function upsertDraftContentSection(args: {
     throw new Error(JSON.stringify(parsed.error.flatten()))
   }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
 
   const existing = await getContentSectionForAdmin(args.key)
   const nextVersion = existing ? existing.version + 1 : 1
@@ -83,7 +83,7 @@ export async function publishContentSection(args: {
   key: ContentKey
   publishedBy?: string
 }): Promise<ContentSectionRow> {
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
   const current = await getContentSectionForAdmin(args.key)
 
   if (!current) {
@@ -119,4 +119,3 @@ export async function publishContentSection(args: {
 
   return published as ContentSectionRow
 }
-

@@ -1,45 +1,16 @@
-import { redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { createServerAuthClient } from '@/lib/supabase-server'
-import type { Database } from '@/types/database'
+import { createClient } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 type UserRole = 'guest' | 'member' | 'user' | 'admin' | 'administrator'
 
-export async function requireAuth() {
-  const supabase = await createServerAuthClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-
-  if (error || !user) {
-    redirect('/login')
-  }
-
-  return user
-}
-
-export async function requireRole(requiredRoles: UserRole[] | UserRole = 'guest') {
-  const user = await requireAuth()
-  const userRole = await getUserRole(user.id)
-
-  // Convert single role to array for consistent handling
-  const roleArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles]
-
-  // Check if user has required role
-  if (!roleArray.includes(userRole)) {
-    // Redirect non-users to homepage, not back to admin
-    redirect('/')
-  }
-
-  return user
-}
-
-export async function getCurrentUser() {
-  const supabase = await createServerAuthClient()
+export async function getUser(): Promise<User | null> {
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   return user
 }
 
 export async function getUserRole(userId: string): Promise<UserRole> {
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
 
   try {
     const { data: profile, error } = await supabase
@@ -59,7 +30,7 @@ export async function getUserRole(userId: string): Promise<UserRole> {
 }
 
 export async function getUserProfile(userId: string) {
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
 
   const { data: profile, error } = await supabase
     .from('profiles')
@@ -75,7 +46,7 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function updateUserRole(userId: string, role: UserRole) {
-  const supabase = createServerSupabaseClient()
+  const supabase = createClient()
 
   const { error } = await supabase
     .from('profiles')
@@ -92,13 +63,11 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
 export async function createUserProfile(userId: string, fullName: string, role: UserRole = 'guest') {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
 
-    // Get user email from auth
-    const { data: userData } = await supabase.auth.admin.getUserById(userId)
+    const { data: userData } = await supabase.auth.getUser()
     const email = userData?.user?.email || ''
 
-    // Direct insert - trigger on profiles table will handle admin role assignment
     const { error } = await supabase
       .from('profiles')
       .insert({
@@ -114,4 +83,9 @@ export async function createUserProfile(userId: string, fullName: string, role: 
   } catch (catchError) {
     console.error('Exception during profile creation:', catchError)
   }
+}
+
+export function hasRequiredRole(userRole: UserRole, requiredRoles: UserRole[] | UserRole): boolean {
+  const roleArray = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles]
+  return roleArray.includes(userRole)
 }

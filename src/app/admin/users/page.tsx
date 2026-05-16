@@ -1,30 +1,65 @@
-import { requireRole } from '@/lib/auth'
-import { createServerSupabaseClient } from '@/lib/supabase'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
+import { getUser, getUserRole, updateUserRole } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { UserRoleSelect } from '@/components/admin/user-role-select'
 import { Users, Shield, Crown, User } from 'lucide-react'
 import type { Database } from '@/types/database'
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row']
 
-export default async function UsersManagement() {
-  // Admins and administrators can access this page
-  await requireRole(['admin', 'administrator'])
+export default function UsersManagement() {
+  const router = useRouter()
+  const [users, setUsers] = useState<ProfileRow[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const supabase = createServerSupabaseClient()
+  useEffect(() => {
+    async function checkAuth() {
+      const user = await getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
 
-  // Fetch all users with their profiles
-  const { data: users, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
+      const role = await getUserRole(user.id)
+      if (!['admin', 'administrator'].includes(role)) {
+        router.push('/')
+        return
+      }
 
-  if (error) {
-    console.error('Error fetching users:', error)
+      loadUsers()
+    }
+
+    checkAuth()
+  }, [router])
+
+  async function loadUsers() {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching users:', error)
+    } else {
+      setUsers((data as ProfileRow[]) || [])
+    }
+    setLoading(false)
   }
 
-  const userList = (users as ProfileRow[]) || []
+  async function handleRoleChange(userId: string, newRole: string) {
+    try {
+      await updateUserRole(userId, newRole as 'guest' | 'member' | 'admin')
+      await loadUsers()
+    } catch (error) {
+      console.error('Error updating user role:', error)
+      alert('Failed to update user role')
+    }
+  }
 
   const getRoleIcon = (role: string | null) => {
     switch (role) {
@@ -48,6 +83,10 @@ export default async function UsersManagement() {
     }
   }
 
+  if (loading) {
+    return <div className="p-8">Loading users...</div>
+  }
+
   return (
     <div className="space-y-8 py-8">
       <div className="flex items-center justify-between animate-title">
@@ -63,7 +102,6 @@ export default async function UsersManagement() {
         </Badge>
       </div>
 
-      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-6">
@@ -71,7 +109,7 @@ export default async function UsersManagement() {
               <Users className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{userList.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               </div>
             </div>
           </CardContent>
@@ -84,7 +122,7 @@ export default async function UsersManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Members</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userList.filter(u => u.role === 'member').length}
+                  {users.filter(u => u.role === 'member').length}
                 </p>
               </div>
             </div>
@@ -98,7 +136,7 @@ export default async function UsersManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Admins</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userList.filter(u => u.role === 'admin').length}
+                  {users.filter(u => u.role === 'admin').length}
                 </p>
               </div>
             </div>
@@ -112,7 +150,7 @@ export default async function UsersManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Guests</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {userList.filter(u => u.role === 'guest' || !u.role).length}
+                  {users.filter(u => u.role === 'guest' || !u.role).length}
                 </p>
               </div>
             </div>
@@ -120,13 +158,12 @@ export default async function UsersManagement() {
         </Card>
       </div>
 
-      {/* Users List */}
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>
         </CardHeader>
         <CardContent>
-          {userList.length === 0 ? (
+          {users.length === 0 ? (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-medium text-gray-900">No users yet</h3>
@@ -136,7 +173,7 @@ export default async function UsersManagement() {
             </div>
           ) : (
             <div className="space-y-4">
-              {userList.map((user) => (
+              {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center">
@@ -157,10 +194,15 @@ export default async function UsersManagement() {
                       {user.role || 'guest'}
                     </Badge>
 
-                    <UserRoleSelect
-                      userId={user.id!}
-                      defaultRole={user.role || 'guest'}
-                    />
+                    <select
+                      value={user.role || 'guest'}
+                      onChange={(e) => handleRoleChange(user.id!, e.target.value)}
+                      className="px-2 py-1 border rounded text-sm"
+                    >
+                      <option value="guest">Guest</option>
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                    </select>
                   </div>
                 </div>
               ))}

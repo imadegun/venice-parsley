@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { createApartment, deleteApartment, updateApartment } from './actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UnifiedImageManager } from '@/components/admin/unified-image-manager'
-import { Plus, Building, Save, Trash2, Edit2, ArrowLeft, Image as ImageIcon, Info, DollarSign, Users } from 'lucide-react'
+import { Plus, Building, Save, Trash2, Edit2, ArrowLeft, Image as ImageIcon, Info } from 'lucide-react'
 
 interface Apartment {
   id: string
@@ -26,12 +25,51 @@ interface Apartment {
   amenities: string[]
   gallery_images: string[]
   image_url: string
-
 }
 
 interface ImageState {
   images: string[]
   mainImageIndex: number
+}
+
+const APARTMENT_IMAGES_BUCKET = 'apartment-images'
+
+function isApartmentStorageUrl(url: string) {
+  return url.includes(`/storage/v1/object/public/${APARTMENT_IMAGES_BUCKET}/`)
+}
+
+function getStoragePathFromPublicUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    const marker = `/object/public/${APARTMENT_IMAGES_BUCKET}/`
+    const index = parsed.pathname.indexOf(marker)
+    if (index === -1) return null
+    return decodeURIComponent(parsed.pathname.slice(index + marker.length))
+  } catch {
+    return null
+  }
+}
+
+async function uploadFileToStorage(file: File, slug: string) {
+  const supabase = createClient()
+  const extension = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
+  const filePath = `apartments/${slug}/${crypto.randomUUID()}-${Date.now()}.${extension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(APARTMENT_IMAGES_BUCKET)
+    .upload(filePath, file, {
+      upsert: false,
+      cacheControl: '31536000',
+      contentType: file.type || 'image/jpeg',
+    })
+
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data: publicData } = supabase.storage
+    .from(APARTMENT_IMAGES_BUCKET)
+    .getPublicUrl(filePath)
+
+  return publicData.publicUrl
 }
 
 export default function AdminApartmentsPage() {
@@ -42,7 +80,6 @@ export default function AdminApartmentsPage() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  // Form state
   const [nameEn, setNameEn] = useState('')
   const [nameIt, setNameIt] = useState('')
   const [category, setCategory] = useState('')
@@ -124,6 +161,7 @@ export default function AdminApartmentsPage() {
     e.preventDefault()
     setSaving(true)
     try {
+      const supabase = createClient()
       const nameObj = { en: nameEn, it: nameIt }
       const shortDescObj = { en: shortDescEn, it: shortDescIt }
       const descObj = { en: descriptionEn, it: descriptionIt }
@@ -146,9 +184,18 @@ export default function AdminApartmentsPage() {
       }
 
       if (editingApartment) {
-        await updateApartment({ id: editingApartment.id, ...values })
+        const { error } = await supabase
+          .from('apartments')
+          .update(values)
+          .eq('id', editingApartment.id)
+
+        if (error) throw new Error(error.message)
       } else {
-        await createApartment(values)
+        const { error } = await supabase
+          .from('apartments')
+          .insert(values)
+
+        if (error) throw new Error(error.message)
       }
 
       await loadApartments()
@@ -165,7 +212,19 @@ export default function AdminApartmentsPage() {
     if (!confirm(`Are you sure you want to delete "${typeof item.name === 'object' ? item.name.en || item.name.it : item.name}"? This action cannot be undone.`)) return
     setDeleting(item.id)
     try {
-      await deleteApartment(item.id)
+      const supabase = createClient()
+
+      const storagePaths = (item.gallery_images || [])
+        .map(getStoragePathFromPublicUrl)
+        .filter((value): value is string => Boolean(value))
+
+      if (storagePaths.length > 0) {
+        await supabase.storage.from(APARTMENT_IMAGES_BUCKET).remove(storagePaths)
+      }
+
+      const { error } = await supabase.from('apartments').delete().eq('id', item.id)
+      if (error) throw new Error(error.message)
+
       await loadApartments()
     } catch (error) {
       console.error('Failed to delete:', error)
@@ -189,7 +248,6 @@ export default function AdminApartmentsPage() {
   if (view === 'form') {
     return (
       <div className="space-y-8 py-8">
-        {/* Header */}
         <div className="animate-title">
           <Button variant="ghost" onClick={handleBackToList} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -220,7 +278,6 @@ export default function AdminApartmentsPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Details Tab */}
             <TabsContent value="details" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -294,7 +351,6 @@ export default function AdminApartmentsPage() {
               </Card>
             </TabsContent>
 
-            {/* Description Tab */}
             <TabsContent value="description" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -322,7 +378,7 @@ export default function AdminApartmentsPage() {
                     <TabsContent value="it" className="space-y-4 min-h-[300px]">
                       <div>
                         <Label htmlFor="descIt">Description (Italian)</Label>
-                        <Textarea id="descIt" value={descriptionIt} onChange={e => setDescriptionIt(e.target.value)} className="mt-1 font-mono" rows={15} placeholder="Inserisci descrizione dell'appartamento..." />
+                        <Textarea id="descIt" value={descriptionIt} onChange={e => setDescriptionIt(e.target.value)} className="mt-1 font-mono" rows={15} placeholder="Inserisci descrizione dell&apos;appartamento..." />
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -330,7 +386,6 @@ export default function AdminApartmentsPage() {
               </Card>
             </TabsContent>
 
-            {/* Images Tab */}
             <TabsContent value="images" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -364,7 +419,6 @@ export default function AdminApartmentsPage() {
 
   return (
     <div className="space-y-8 py-8">
-      {/* Header */}
       <div className="flex items-center justify-between animate-title">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Apartments Management</h1>
@@ -378,13 +432,12 @@ export default function AdminApartmentsPage() {
         </Button>
       </div>
 
-      {/* Apartments List */}
       {apartments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No apartments yet</h3>
-            <p className="text-gray-600 mb-4">Click "Add Apartment" to create your first apartment.</p>
+            <p className="text-gray-600 mb-4">Click &quot;Add Apartment&quot; to create your first apartment.</p>
             <Button onClick={handleAdd}>
               <Plus className="h-4 w-4 mr-2" />
               Add Apartment
@@ -395,7 +448,6 @@ export default function AdminApartmentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {apartments.map(item => (
             <Card key={item.id} className="hover:shadow-md transition-shadow overflow-hidden">
-              {/* Image */}
               <div className="h-48 bg-gray-100 relative">
                 {item.gallery_images && item.gallery_images.length > 0 ? (
                   <img
@@ -415,7 +467,6 @@ export default function AdminApartmentsPage() {
                 )}
               </div>
 
-              {/* Content */}
               <CardContent className="p-4 space-y-3">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{getApartmentName(item)}</h3>
@@ -429,25 +480,15 @@ export default function AdminApartmentsPage() {
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4" />
-                    €{(item.base_price_cents / 100).toFixed(0)}/night
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {item.max_guests} guests
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Building className="h-4 w-4" />
-                    {item.bedrooms} bed{item.bedrooms !== 1 ? 's' : ''}
-                  </span>
+                  <span>€{(item.base_price_cents / 100).toFixed(0)}/night</span>
+                  <span>{item.max_guests} guests</span>
+                  <span>{item.bedrooms} bed{item.bedrooms !== 1 ? 's' : ''}</span>
                 </div>
 
                 {item.size_sqm && (
                   <p className="text-xs text-gray-500">{item.size_sqm} m²</p>
                 )}
 
-                {/* Actions */}
                 <div className="flex items-center gap-2 pt-2 border-t">
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(item)}>
                     <Edit2 className="h-3.5 w-3.5 mr-1.5" />

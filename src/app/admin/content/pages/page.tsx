@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -32,7 +33,6 @@ export default function MenuPagesManagement() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
 
-  // Bilingual content states
   const [contentEn, setContentEn] = useState('')
   const [contentIt, setContentIt] = useState('')
   const [mapEmbed, setMapEmbed] = useState('')
@@ -40,7 +40,6 @@ export default function MenuPagesManagement() {
   const [documents, setDocuments] = useState<Array<{url: string, title: string}>>([])
   const [downloadsEnabled, setDownloadsEnabled] = useState(false)
 
-  // Utility function to extract filename from URL
   const getFileName = (url: string) => {
     try {
       const urlObj = new URL(url)
@@ -54,13 +53,17 @@ export default function MenuPagesManagement() {
 
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch('/api/admin/menu')
-      if (response.ok) {
-        const data = await response.json()
-        // Filter out system pages that should not be edited here
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+
+      if (!error && data) {
         const nonEditablePaths = ['/apartments', '/login', '/register', '/admin']
         const editableItems = data.filter((item: MenuItem) =>
-          item.is_active && !nonEditablePaths.includes(item.href)
+          !nonEditablePaths.includes(item.href)
         )
         setMenuItems(editableItems)
       }
@@ -78,7 +81,6 @@ export default function MenuPagesManagement() {
   const openEditContent = (item: MenuItem) => {
     setSelectedItem(item)
 
-    // Parse content
     let enContent = ''
     let itContent = ''
 
@@ -101,7 +103,6 @@ export default function MenuPagesManagement() {
     setContentIt(itContent)
     setMapEmbed(item.map_embed || '')
     setImageUrl(item.image_url || '')
-    // Convert old format (string[]) or string to new format if needed
     let processedDocuments: Array<{url: string, title: string}> = []
     if (item.documents) {
       let documentsArray: any[] = []
@@ -115,15 +116,12 @@ export default function MenuPagesManagement() {
         documentsArray = item.documents
       }
       if (documentsArray.length > 0) {
-        // Check if it's the old format (array of strings) or new format (array of objects)
         if (typeof documentsArray[0] === 'string') {
-          // Old format: convert to new format
           processedDocuments = (documentsArray as string[]).map(url => ({
             url,
             title: getFileName(url)
           }))
         } else {
-          // New format: use as is
           processedDocuments = documentsArray as Array<{url: string, title: string}>
         }
       }
@@ -136,17 +134,13 @@ export default function MenuPagesManagement() {
   const saveDocumentChanges = async (updatedDocuments: Array<{url: string, title: string}>) => {
     if (!selectedItem) return
 
-    // Store content as JSON with en/it keys
-    const contentValue = JSON.stringify({
-      en: contentEn,
-      it: contentIt
-    })
+    const contentValue = JSON.stringify({ en: contentEn, it: contentIt })
 
     try {
-      const response = await fetch(`/api/admin/menu/${selectedItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('menu_items')
+        .update({
           title: selectedItem.title,
           href: selectedItem.href,
           is_active: selectedItem.is_active,
@@ -157,20 +151,14 @@ export default function MenuPagesManagement() {
           documents: updatedDocuments,
           downloads_enabled: downloadsEnabled,
         })
-      })
+        .eq('id', selectedItem.id)
 
-      if (response.ok) {
-        // Update local state and refresh the menu items
-        setDocuments(updatedDocuments)
-        await fetchMenuItems()
-      } else {
-        // Revert local state on error
-        alert('Failed to save document changes')
-        setDocuments(documents)
-      }
+      if (error) throw error
+      setDocuments(updatedDocuments)
+      await fetchMenuItems()
     } catch (error) {
       console.error('Error saving document changes:', error)
-      // Revert local state on error
+      alert('Failed to save document changes')
       setDocuments(documents)
     }
   }
@@ -179,17 +167,13 @@ export default function MenuPagesManagement() {
     e.preventDefault()
     if (!selectedItem) return
 
-    // Store content as JSON with en/it keys
-    const contentValue = JSON.stringify({
-      en: contentEn,
-      it: contentIt
-    })
+    const contentValue = JSON.stringify({ en: contentEn, it: contentIt })
 
     try {
-      const response = await fetch(`/api/admin/menu/${selectedItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('menu_items')
+        .update({
           title: selectedItem.title,
           href: selectedItem.href,
           is_active: selectedItem.is_active,
@@ -200,24 +184,21 @@ export default function MenuPagesManagement() {
           documents: documents,
           downloads_enabled: downloadsEnabled,
         })
-      })
+        .eq('id', selectedItem.id)
 
-      if (response.ok) {
-        await fetchMenuItems()
-        setDialogOpen(false)
-        setSelectedItem(null)
-        setContentEn('')
-        setContentIt('')
-        setMapEmbed('')
-        setImageUrl('')
-        setDocuments([])
-        setDownloadsEnabled(false)
-      } else {
-        alert('Failed to save page content')
-        console.error('Failed to save page content')
-      }
+      if (error) throw error
+      await fetchMenuItems()
+      setDialogOpen(false)
+      setSelectedItem(null)
+      setContentEn('')
+      setContentIt('')
+      setMapEmbed('')
+      setImageUrl('')
+      setDocuments([])
+      setDownloadsEnabled(false)
     } catch (error) {
       console.error('Error saving page content:', error)
+      alert('Failed to save page content')
     }
   }
 
@@ -249,27 +230,27 @@ export default function MenuPagesManagement() {
                      <div className="flex flex-wrap gap-2 mt-1">
                       {item.content && (
                         <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">
-                          Content ✓
+                          Content
                         </span>
                       )}
                       {item.image_url && (
                         <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded">
-                          Image ✓
+                          Image
                         </span>
                       )}
                        {item.map_embed && (
                          <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded">
-                           Map ✓
+                           Map
                          </span>
                        )}
                        {item.documents && item.documents.length > 0 && (
                          <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">
-                           Docs ✓
+                           Docs
                          </span>
                        )}
                        {item.downloads_enabled && (
                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
-                           Downloads ✓
+                           Downloads
                          </span>
                        )}
                     </div>
