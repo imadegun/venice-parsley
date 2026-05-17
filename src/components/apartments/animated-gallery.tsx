@@ -43,6 +43,11 @@ export function AnimatedGallery({ images, title }: AnimatedGalleryProps) {
     setActiveIndex((prev) => (prev + 1) % normalizedImages.length)
   }
 
+  const [showAllThumbnails, setShowAllThumbnails] = useState(false)
+  const THUMBNAIL_LIMIT = 10
+  const visibleThumbnails = showAllThumbnails ? normalizedImages : normalizedImages.slice(0, THUMBNAIL_LIMIT)
+  const hasMoreThumbnails = normalizedImages.length > THUMBNAIL_LIMIT
+
   return (
     <div
       className="space-y-6"
@@ -101,34 +106,53 @@ export function AnimatedGallery({ images, title }: AnimatedGalleryProps) {
 
       {normalizedImages.length > 1 && (
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900">Gallery</h3>
+            <span className="text-sm text-slate-500">{normalizedImages.length} photos</span>
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {normalizedImages.map((image, index) => (
+            {visibleThumbnails.map((image, index) => {
+              const realIndex = normalizedImages.indexOf(image)
+              return (
+                <button
+                  type="button"
+                  key={`${image}-${index}`}
+                  onClick={() => setActiveIndex(realIndex)}
+                  onMouseEnter={() => {
+                    setIsPaused(true)
+                    setActiveIndex(realIndex)
+                  }}
+                  className={`group relative aspect-square overflow-hidden rounded-xl transition-all duration-300 ${
+                    realIndex === activeIndex
+                      ? 'ring-2 ring-violet-500 scale-[1.02]'
+                      : 'opacity-90 hover:opacity-100 hover:-translate-y-0.5'
+                  }`}
+                  aria-label={`Show image ${realIndex + 1}`}
+                >
+                  <Image
+                    src={image}
+                    alt={`${title} thumbnail ${realIndex + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <span className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
+                </button>
+              )
+            })}
+          </div>
+          {hasMoreThumbnails && (
+            <div className="flex justify-center pt-2">
               <button
                 type="button"
-                key={`${image}-${index}`}
-                onClick={() => setActiveIndex(index)}
-                onMouseEnter={() => {
-                  setIsPaused(true)
-                  setActiveIndex(index)
-                }}
-                className={`group relative aspect-square overflow-hidden rounded-xl transition-all duration-300 ${
-                  index === activeIndex
-                    ? 'ring-2 ring-violet-500 scale-[1.02]'
-                    : 'opacity-90 hover:opacity-100 hover:-translate-y-0.5'
-                }`}
-                aria-label={`Show image ${index + 1}`}
+                onClick={() => setShowAllThumbnails(!showAllThumbnails)}
+                className="px-6 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"
               >
-                <Image
-                  src={image}
-                  alt={`${title} thumbnail ${index + 1}`}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <span className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
+                {showAllThumbnails
+                  ? `Show less`
+                  : `Show ${normalizedImages.length - THUMBNAIL_LIMIT} more`}
               </button>
-            ))}
-          </div>
+            </div>
+          )}
         </section>
       )}
 
