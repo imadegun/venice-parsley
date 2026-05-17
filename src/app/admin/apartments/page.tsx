@@ -97,10 +97,12 @@ export default function AdminApartmentsPage() {
   async function loadApartments() {
     setLoading(true)
     const supabase = createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('apartments')
       .select('*')
       .order('created_at', { ascending: false })
+    
+    console.log('loadApartments:', { count: data?.length || 0, error })
     setApartments(data || [])
     setLoading(false)
   }
@@ -173,22 +175,31 @@ export default function AdminApartmentsPage() {
         image_url: galleryImages.images[galleryImages.mainImageIndex] || '',
       }
 
+      console.log('Saving apartment:', editingApartment ? 'UPDATE' : 'INSERT', values)
+
+      let result
       if (editingApartment) {
-        const { error } = await supabase
+        result = await supabase
           .from('apartments')
           .update(values)
           .eq('id', editingApartment.id)
-
-        if (error) throw new Error(error.message)
       } else {
-        const { error } = await supabase
+        result = await supabase
           .from('apartments')
           .insert(values)
-
-        if (error) throw new Error(error.message)
       }
 
+      const { error } = result
+      console.log('Save result:', { error, data: result.data })
+
+      if (error) {
+        console.error('Supabase error details:', JSON.stringify(error, null, 2))
+        throw new Error(error.message)
+      }
+
+      console.log('Save successful, reloading apartments...')
       await loadApartments()
+      alert(editingApartment ? 'Apartment updated successfully!' : 'Apartment created successfully!')
       handleBackToList()
     } catch (error) {
       console.error('Failed to save:', error)
